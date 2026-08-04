@@ -1,0 +1,58 @@
+{
+  "type": "directory",
+  "path": "/content/dam/picker",
+  "name": "Picker",
+  "isLeaf": false,
+  "childrenCount": 3,
+  "thumbnail": { "url": "/mocks/thumbs/folder.svg" },
+  "total": 4,
+  "displayed": 4,
+  "time": 18,
+  "items": [
+    {
+      "type": "directory",
+      "path": "/content/dam/picker/brand",
+      "name": "Brand",
+      "isLeaf": true,
+      "childrenCount": 3,
+      "thumbnail": { "url": "/mocks/thumbs/folder.svg" }
+    },
+    {
+      "type": "directory",
+      "path": "/content/dam/picker/campaigns",
+      "name": "Campaigns",
+      "isLeaf": false,
+      "childrenCount": 4,
+      "thumbnail": { "url": "/mocks/thumbs/folder.svg" }
+    },
+    {
+      "type": "directory",
+      "path": "/content/dam/picker/products",
+      "name": "Products",
+      "isLeaf": true,
+      "childrenCount": 4,
+      "thumbnail": { "url": "/mocks/thumbs/folder.svg" }
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/brand-guidelines-2026.pdf",
+      "name": "brand-guidelines-2026.pdf",
+      "title": "Brand Guidelines 2026",
+      "mime": "application/pdf",
+      "size": "4.2 MB",
+      "url": "/content/dam/picker/brand-guidelines-2026.pdf",
+      "resolution": { "width": 2480, "height": 3508, "dpi": 300, "dimensions": "2480 x 3508" },
+      "thumbnail": { "url": "/mocks/thumbs/brand-guidelines.svg" },
+      "originalDownloadUrl": "/content/dam/picker/brand-guidelines-2026.pdf",
+      "renditionDownloadUrl": "/content/dam/picker/brand-guidelines-2026.pdf",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Document" },
+        { "label": "Brand", "value": "Corporate" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+export { QuickViewModal } from "./QuickViewModal";

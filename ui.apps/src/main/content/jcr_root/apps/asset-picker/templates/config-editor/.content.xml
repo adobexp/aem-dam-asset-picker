@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+    jcr:primaryType="cq:Template"
+    jcr:title="Asset Picker : CA Config"
+    jcr:description="Context-Aware Configuration editor for Asset Picker appearance, metadata filters and Quick View fields. Create under a language page for locale-specific overrides, or under a country / tenant page for shared configuration."
+    allowedPaths="^/content/asset-picker(/.*)?$"
+    ranking="{Long}50">
+    <jcr:content
+        jcr:primaryType="cq:PageContent"
+        sling:resourceType="wcm-io/caconfig/editor/components/page/editor"/>
+</jcr:root>

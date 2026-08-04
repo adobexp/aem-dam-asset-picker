@@ -1,0 +1,114 @@
+.root {
+  width: 100%;
+}
+
+.toggleButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 35px 18px 16px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--filter-section-title-color);
+  font-size: 16px;
+  font-weight: var(--collapsible-button-weight, 500);
+  text-transform: var(--collapsible-button-text-transform, none);
+  line-height: 22px;
+  text-align: left;
+  font-family: inherit;
+  transition: color 0.2s ease;
+
+  &:hover .title,
+  &:focus-visible .title {
+    color: var(--active);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    .icon {
+      color: var(--active);
+    }
+  }
+}
+
+.titleWrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.title {
+  color: var(--filter-section-title-color);
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 24px;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.badge {
+  color: var(--filter-section-meta-color);
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+}
+
+.icon {
+  color: var(--filter-section-title-color);
+  flex-shrink: 0;
+
+
+transition: transform var(--motion-duration-base) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard);
+
+  transform-origin: center;
+
+  .expanded & {
+    transform: rotate(180deg);
+  }
+}
+
+
+.content {
+  display: grid;
+  grid-template-rows: 0fr;
+
+transition:
+    grid-template-rows var(--motion-duration-medium) var(--motion-ease-standard),
+    opacity var(--motion-duration-base) var(--motion-ease-standard);
+  opacity: 0;
+  overflow: hidden;
+}
+
+
+.boxChecked {
+  animation: checkboxPop 260ms var(--motion-ease-bounce);
+}
+
+.tick {
+  animation: tickIn 220ms var(--motion-ease-out) 40ms both;
+}
+
+
+.expanded .content {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.contentInner {
+  min-height: 0; /* required for the 1fr/0fr grid technique */
+  padding: 0 4px 4px;
+  overflow: hidden;
+}

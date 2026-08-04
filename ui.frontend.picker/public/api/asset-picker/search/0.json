@@ -1,0 +1,173 @@
+{
+  "type": "directory",
+  "path": "/api/search",
+  "name": "Search results",
+  "hasNextPage": true,
+  "total": 15,
+  "displayed": 6,
+  "time": 64,
+  "items": [
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/homepage-hero.jpg",
+      "name": "Homepage Hero \u2014 Master",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 3840,
+        "height": 1600,
+        "dpi": 72,
+        "dimensions": "12H x 5W"
+      },
+      "size": "5.1 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/homepage-hero/3840/1600",
+      "renditionDownloadUrl": "https://picsum.photos/seed/homepage-hero-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/homepage-hero/400/300"
+      },
+      "metadata": [
+        {
+          "label": "Status",
+          "value": "Approved"
+        },
+        {
+          "label": "Owner",
+          "value": "Brand Studio"
+        }
+      ]
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/campaigns/summer-2026/hero-billboard.jpg",
+      "name": "Summer Hero Billboard",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 3840,
+        "height": 2160,
+        "dpi": 72,
+        "dimensions": "16H x 9W"
+      },
+      "size": "4.8 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/summer-hero/3840/2160",
+      "renditionDownloadUrl": "https://picsum.photos/seed/summer-hero-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/summer-hero/400/300"
+      },
+      "metadata": [
+        {
+          "label": "Campaign",
+          "value": "Summer Launch 2026"
+        },
+        {
+          "label": "Channel",
+          "value": "OOH"
+        }
+      ]
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/campaigns/summer-2026/key-visual.jpg",
+      "name": "Summer Key Visual",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 2400,
+        "height": 3000,
+        "dpi": 72,
+        "dimensions": "4H x 5W"
+      },
+      "size": "3.1 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/summer-kv/2400/3000",
+      "renditionDownloadUrl": "https://picsum.photos/seed/summer-kv-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/summer-kv/400/300"
+      },
+      "metadata": [
+        {
+          "label": "Campaign",
+          "value": "Summer Launch 2026"
+        },
+        {
+          "label": "Usage",
+          "value": "Print + Digital"
+        }
+      ]
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/campaigns/holiday-2025/festive-pack-shot.jpg",
+      "name": "Festive Pack Shot",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 2000,
+        "height": 2000,
+        "dpi": 72,
+        "dimensions": "1H x 1W"
+      },
+      "size": "2.4 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/holiday-pack/2000/2000",
+      "renditionDownloadUrl": "https://picsum.photos/seed/holiday-pack-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/holiday-pack/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/products/packaging/can-front.jpg",
+      "name": "Can \u2014 Front Label",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 1600,
+        "height": 2200,
+        "dpi": 72,
+        "dimensions": "8H x 11W"
+      },
+      "size": "1.9 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/pack-can-front/1600/2200",
+      "renditionDownloadUrl": "https://picsum.photos/seed/pack-can-front-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/pack-can-front/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/products/lifestyle/beach-scene.jpg",
+      "name": "Beach Lifestyle Scene",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 4000,
+        "height": 2667,
+        "dpi": 72,
+        "dimensions": "3H x 2W"
+      },
+      "size": "5.4 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/life-beach/4000/2667",
+      "renditionDownloadUrl": "https://picsum.photos/seed/life-beach-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/life-beach/400/300"
+      }
+    }
+  ]
+}

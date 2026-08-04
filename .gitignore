@@ -1,0 +1,44 @@
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# https://maven.apache.org/tools/wrapper/#Usage_with_or_without_Binary_JAR
+.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse m2e generated files
+# Eclipse Core
+.project
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Node / frontend build output
+node_modules/
+npm-debug.log*
+yarn-error.log
+.eslintcache
+
+# ui.frontend.picker generated artefacts
+ui.frontend.picker/public/static/
+ui.frontend.picker/public/framework/
+ui.frontend.picker/client-libs/
+
+# ui.apps content copied in from other modules at generate-sources
+clientlib-unpack/
+ui.apps/src/main/content/jcr_root/apps/asset-picker/clientlibs/asset-picker.spa/
+ui.apps/src/main/content/jcr_root/apps/asset-picker/clientlibs/clientlib-demo/css/demo.css
+ui.apps/src/main/content/jcr_root/apps/asset-picker/clientlibs/clientlib-demo/js/demo.js
+
+# OS noise
+.DS_Store
+Thumbs.db

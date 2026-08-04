@@ -1,0 +1,73 @@
+{
+  "type": "directory",
+  "path": "/api/search",
+  "name": "Search results",
+  "hasNextPage": false,
+  "total": 15,
+  "displayed": 15,
+  "time": 88,
+  "items": [
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-2/press/ceo-portrait.jpg",
+      "name": "CEO Portrait",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 2000,
+        "height": 2500,
+        "dpi": 72,
+        "dimensions": "4H x 5W"
+      },
+      "size": "2.2 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/ceo-portrait/2000/2500",
+      "renditionDownloadUrl": "https://picsum.photos/seed/ceo-portrait-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/ceo-portrait/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-3/legacy-logo-2018.png",
+      "name": "Legacy Logo 2018",
+      "mime": "image/png",
+      "resolution": {
+        "width": 1600,
+        "height": 500,
+        "dpi": 72,
+        "dimensions": "16H x 5W"
+      },
+      "size": "180 KB",
+      "originalDownloadUrl": "https://picsum.photos/seed/legacy-logo/1600/500",
+      "renditionDownloadUrl": "https://picsum.photos/seed/legacy-logo-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/legacy-logo/400/300"
+      }
+    },
+    {
+      "type": "directory",
+      "path": "/api/assets/root-1/campaigns/summer-2026",
+      "name": "Summer Launch 2026",
+      "isLeaf": true,
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/dir-summer-2026/320/240"
+      }
+    },
+    {
+      "type": "directory",
+      "path": "/api/assets/root-1/brand-kit/logos",
+      "name": "Logos",
+      "isLeaf": true,
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/dir-logos/320/240"
+      }
+    }
+  ]
+}

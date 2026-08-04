@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="nt:unstructured"
+    label="Asset Type"
+    propertyPath="./jcr:content/metadata/adobexp:asset-type"
+    fieldType="checkbox"
+    valuesListPath="/etc/acs-commons/lists/adobexp/metadata/asset-type"
+    multiSelectAllowed="{Boolean}true"
+    expanded="{Boolean}false"
+    searchable="{Boolean}true"
+    orderIndex="{Long}20"
+    enabled="{Boolean}true"/>

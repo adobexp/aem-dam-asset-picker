@@ -1,0 +1,190 @@
+[data-asset-browser-theme="light"] {
+  --active: #000000;
+  --background: #ffffff;                              /* updated */
+  --content-background: #ffffff;
+  --text-color: #202020;
+  --layout-border: #e1e1e1;
+  --font-size: 14px;
+  --font-family: "Montserrat", sans-serif;
+  --modal-backdrop: #00000080;
+  --browser-view-toggle-background: #dddddd;
+  --browser-view-toggle-active: #fffdf8;
+  --button-background: var(--active);
+  --button-background-hover: #1a1a1a;
+  --button-background-active: #1a1a1a;
+  --button-background-selected: #000000;
+  --button-color: #ffffff;
+  --button-color-hover: #ffffff;
+  --button-color-active: #ffffff;
+  --button-color-selected: #ffffff;
+  --button-radius: 999px;
+  --border-color: #E7E9EC;
+  --action-button-color: var(--text-color);
+  --action-button-opacity: 0.6;
+  --action-button-weight: normal;
+  --blocking-loader-background: #ffffff80;
+  --main-box-shadow: none;
+  --directory-tree-background: #ffffff;               /* updated */
+  --directory-tree-color: #4b4b4b;
+  --directory-tree-line: #ccc;
+  --directory-tree-active: rgb(0 0 0 / 6%);
+  --directory-tree-shadow: none;
+  --directory-tree-link-active: var(--active);
+  --directory-tree-link-active-background: rgb(0 0 0 / 8%);
+  --filters-background: #ffffff;                      /* updated */
+  --filters-color: #202020;
+  --filters-border: #E5E5E5;
+  --filters-box-shadow: none;
+  --search-height: 46px;
+  --search-input-border: transparent;
+  --search-input-color: #202020;
+  --search-input-background: #F5F5F7;                 /* updated to placeholder bg */
+  --search-input-placeholder: #6B6B6B;
+  --search-input-font-size: 14px;
+  --search-submit-radius: 999px;
+  --search-submit-background: #000000;
+  --search-submit-color: #ffffff;
+  --search-submit-weight: 600;
+  --hamburger-color: #505050;
+  --settings-panel-background: #ffffff;
+  --settings-panel-button: #000000;
+  --settings-panel-button-color: #ffffff;
+  --card-background: #fff;
+  --card-border: #e5e5e5;
+  --card-border-hover: #202020;
+  --card-border-radius: 10px;
+  --card-icon-background: #e1e1e1e6;
+  --card-icon-border: #2c2c2c;
+  --card-icon-color: #fff;
+  --card-name-color: #fff;
+  --card-name-weight: normal;
+  /* Folder / directory cards (light): black type on diagonal grey gradient */
+  --directory-card-background: linear-gradient(135deg, #f4f4f6 0%, #e0e0e4 45%, #c9c9cf 100%);
+  --directory-card-name-color: #000000;
+  --directory-card-count-color: #000000;
+  --directory-card-icon-color: #000000;
+  --directory-card-overlay: linear-gradient(to top, rgb(255 255 255 / 75%), transparent 55%);
+  --directory-card-thumbnail-icon-background: rgb(255 255 255 / 85%);
+  --directory-card-thumbnail-icon-color: #000000;
+  --card-image-background: rgb(0 0 0 / 5%);
+  --loader: #000000;
+  --meta-font-size: 11px;
+  --meta-key-color: #a19f9f;
+  --meta-value-color: #505050;
+  --breadcrumbs-background: #e1e1e1;
+  --breadcrumbs-divider: #e1e1e1;
+  --breadcrumbs-color-active: #000000;
+  --select-background: #fff;
+  --select-background-focused: #e1e1e1;
+  --select-background-selected: #000000;
+  --select-background-selected-focused: #1a1a1a;
+  --select-color: #363636;
+  --select-color-selected: #ffffff;
+  --select-color-disabled: #ccc;
+  --collapsible-button-weight: 500;
+  --collapsible-button-text-transform: none;          /* updated — no uppercase in Figma */
+  --list-table-header-color: #808080;
+  --list-table-header-background: #f1efefe6;
+  --list-table-row-border: #f0f0f0;
+  --list-action-button-color: #363636;
+  --list-action-button-background: #f5f5f5;
+  --list-action-button-border: #e0e0e0;
+  --list-action-button-background-hover: #e0e0e0;
+  --list-icon-background: #e1e1e1e6;
+  --list-icon-color: #fff;
+  --hover-bar-background: #000000;
+  --hover-bar-icon: #ffffff;
+
+  /* ===== NEW TOKENS (filter redesign) ===== */
+  --input-placeholder-bg: #F5F5F7;
+  --input-placeholder-color: #6B6B6B;
+  --button-primary-bg: #000000;
+  --button-primary-color: #ffffff;
+  --button-primary-hover-bg: #1a1a1a;
+  --button-secondary-bg: #ffffff;
+  --button-secondary-border: #000000;
+  --button-secondary-color: #000000;
+  --button-secondary-hover-bg: rgba(0, 0, 0, 0.04);
+  --button-disabled-bg: rgba(0, 0, 0, 0.06);          /* #0000001A approx */
+  --button-disabled-color: rgba(0, 0, 0, 0.35);
+  --button-disabled-border: rgba(0, 0, 0, 0.06);
+  --checkbox-border: #000000;
+  --checkbox-bg: transparent;
+  --checkbox-checked-bg: #000000;
+  --checkbox-checked-color: #ffffff;
+  --checkbox-radius: 4px;
+  --filter-divider: #E5E5E5;
+  --filter-error-color: #D32F2F;
+  --filter-section-title-color: #000000;
+  --filter-section-meta-color: #6B6B6B;
+  --text-color-muted: rgba(32, 32, 32, 0.55);
+  --mobile-drawer-backdrop: rgb(0 0 0 / 35%);
+
+
+
+/* ===== Motion tokens — slower, premium feel ===== */
+--motion-duration-instant: 120ms;
+--motion-duration-fast: 240ms;     /* was 180ms */
+--motion-duration-base: 340ms;     /* was 240ms */
+--motion-duration-medium: 440ms;   /* was 320ms */
+--motion-duration-slow: 560ms;     /* was 420ms */
+--motion-duration-slower: 720ms;   /* was 520ms */
+
+/* Easings stay the same */
+--motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+--motion-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+--motion-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+--motion-ease-out: cubic-bezier(0, 0, 0.2, 1);
+--motion-ease-in:  cubic-bezier(0.4, 0, 1, 1);
+
+
+/* ===== Card tokens ===== */
+--card-media-bg: #e8e8e8;
+--card-text: #202020;
+--card-text-muted: #555555;
+--card-text-faint: #777777;
+--card-text-subtle: #999999;
+--card-overlay-bg: rgba(0, 0, 0, 0.06);
+--card-overlay-action-bg: rgba(0, 0, 0, 0.72);
+--card-overlay-action-text: #ffffff;
+--card-hover-action-bg: #ffffff;
+--card-hover-action-color: #111111;
+--card-hover-action-hover-bg: #f5f5f7;
+--card-hover-menu-bg: #000000;
+--card-hover-menu-color: #ffffff;
+--card-hover-menu-hover-bg: #1a1a1a;
+  --card-shadow-hover: 0 10px 28px rgba(0, 0, 0, 0.14);
+--card-shadow-elevated: 0 2px 8px rgba(0, 0, 0, 0.15);
+--card-shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
+--card-tooltip-bg: #000000;
+--card-tooltip-text: #ffffff;
+--card-status-chip-bg: #ececec;
+--card-status-chip-text: #555555;
+--card-status-restricted-bg: rgba(211, 47, 47, 0.1);
+--card-status-restricted-text: #d32f2f;
+--card-menu-item-hover-bg: rgba(0, 0, 0, 0.05);
+--card-menu-icon-color: #555555;
+
+
+/* Viewer forces dark regardless of theme (matches Figma) */
+  --viewer-bg: #0a0a0a;
+  --viewer-fg: #f5f5f5;
+  --viewer-fg-muted: rgba(245, 245, 245, 0.65);
+  --viewer-fg-subtle: rgba(245, 245, 245, 0.4);
+  --viewer-border: rgba(255, 255, 255, 0.08);
+  --viewer-border-strong: rgba(255, 255, 255, 0.18);
+  --viewer-surface: rgba(255, 255, 255, 0.06);
+  --viewer-surface-hover: rgba(255, 255, 255, 0.1);
+  --viewer-accent: #ffffff;
+  --viewer-accent-fg: #0a0a0a;
+
+  /* Details sidebar */
+  --viewer-sidebar-bg: #141414;
+  --viewer-sidebar-width: 480px;
+
+  /* Zoom pill */
+  --viewer-pill-bg: rgba(20, 20, 20, 0.85);
+  --viewer-pill-border: rgba(255, 255, 255, 0.12);
+
+
+}

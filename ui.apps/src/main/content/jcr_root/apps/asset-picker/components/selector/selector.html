@@ -1,0 +1,13 @@
+<!--/*
+    The SPA bootstrap in src/index.tsx hydrates every `.__react-cmp` it finds, keyed by
+    `data-react-component`, and passes `data-config` / `data-translations` straight to the React tree.
+    Appearance CA-config overrides are emitted as an inline <style> so they win over the clientlib tokens.
+*/-->
+<sly data-sly-use.picker="com.adobexp.assetpicker.models.AssetPickerConfig"></sly>
+<style data-sly-test="${picker.styleOverrides}">${picker.styleOverrides @ context='unsafe'}</style>
+<div class="asset-picker-selector __react-cmp"
+     data-react-component="AssetPicker"
+     data-config="${picker.config}"
+     data-translations="${picker.translations}">
+    <noscript>The Asset Picker needs JavaScript enabled.</noscript>
+</div>

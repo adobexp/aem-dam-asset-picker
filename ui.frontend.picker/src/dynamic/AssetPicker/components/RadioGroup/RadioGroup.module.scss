@@ -1,0 +1,17 @@
+.field {
+  display: flex;
+  justify-content: stretch;
+  margin-bottom: 8px;
+}
+
+.input {
+  flex-grow: 0;
+  width: 24px;
+  margin-right: 8px;
+  text-align: center;
+  line-height: 18px;
+}
+
+.label {
+  flex: 1;
+}

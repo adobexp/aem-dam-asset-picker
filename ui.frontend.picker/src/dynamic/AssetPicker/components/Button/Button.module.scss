@@ -1,0 +1,31 @@
+.button {
+  padding: 1rem;
+  border: 0;
+  background: var(--button-background);
+  color: var(--button-color);
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  text-wrap: nowrap;
+}
+
+.button:hover,
+.button:focus {
+  background: var(--button-background-hover, var(--button-background-active));
+  color: var(--button-color-hover, var(--button-color-active));
+}
+
+.button:active {
+  background: var(--button-background-active);
+  color: var(--button-color-active);
+}
+
+.button.selected,
+.button[aria-pressed="true"] {
+  background: var(--button-background-selected, var(--button-background));
+  color: var(--button-color-selected, var(--button-color));
+}
+
+.button.small {
+  padding: 0 0.25rem;
+  line-height: 1.25rem;
+}

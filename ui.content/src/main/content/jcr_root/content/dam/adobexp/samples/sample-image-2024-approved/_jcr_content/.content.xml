@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:adobexp="http://www.adobexp.com/jcr/adobexp/1.0"
+    jcr:primaryType="dam:AssetContent"
+    cq:name="sample-image-2024-approved.svg"
+    dam:assetState="processed">
+    <metadata
+        jcr:primaryType="nt:unstructured"
+        jcr:mixinTypes="[cq:Taggable]"
+        dc:format="image/svg+xml"
+        dc:title="sample-image-2024-approved"
+        adobexp:year="2024"
+        adobexp:asset-type="Image"
+        adobexp:status="Approved"/>
+    <related jcr:primaryType="nt:unstructured"/>
+</jcr:root>

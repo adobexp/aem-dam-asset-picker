@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="cq:Template"
+    jcr:title="Asset Picker : Integration Page"
+    jcr:description="Host / demo page that launches the Asset Selector (iframe, modal or popup) and validates the postMessage contract (e.g. /content/asset-picker/global/us/en/picker)."
+    allowedPaths="^/content/asset-picker/[^/]+/[^/]+/[^/]+$"
+    ranking="{Long}30">
+    <jcr:content
+        jcr:primaryType="cq:PageContent"
+        jcr:title="Asset Picker Demo"
+        bodyClass="asset-picker-demo-page"
+        clientlibs="[asset-picker.demo]"
+        sling:resourceType="asset-picker/components/page">
+        <demo
+            jcr:primaryType="nt:unstructured"
+            sling:resourceType="asset-picker/components/demo"
+            heading="AEM DAM Asset Picker"
+            intro="Configure the launch options, open the picker, choose assets and confirm the postMessage payload matches the OOTB AEM Asset Picker contract."
+            selectorPath="/content/asset-picker/global/us/en/selector"
+            defaultRoot="/content/dam"
+            rootSuggestions="[/content/dam,/content/dam/we-retail,/content/dam/wknd]"/>
+    </jcr:content>
+</jcr:root>

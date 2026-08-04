@@ -1,0 +1,196 @@
+/* Indent step must stay in px so padding and guide lines share one formula. */
+$level-indent: 16px;
+$row-padding-start: 12px;
+$expand-size: 16px;
+$row-gap: 8px;
+$row-height: 36px;
+
+.directoryTree {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--layout-border, #e8e8e8);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--text-color-muted, rgba(0, 0, 0, 0.45));
+    }
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  svg {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+.handle {
+  cursor: pointer;
+}
+
+.wrapper {
+  padding: 1rem 0;
+  line-height: normal;
+}
+
+/* Block layout so nested children stack under parents without
+   inline-block baseline / line-height gaps and overlaps. */
+.directory {
+  display: block;
+  width: 100%;
+}
+
+.directoryLoader {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: calc(
+    var(--directory-level) * $level-indent + $row-padding-start + $expand-size + $row-gap
+  );
+}
+
+.subdirectories {
+  position: relative;
+  display: block;
+
+  /* Guide line through the parent's expand-icon column. */
+  &::before {
+    z-index: 0;
+    content: "";
+    position: absolute;
+    left: calc(
+      var(--directory-level) * $level-indent + $row-padding-start + ($expand-size / 2)
+    );
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--directory-tree-line);
+    pointer-events: none;
+  }
+}
+
+.directoryLinkWrapper {
+  position: relative;
+  display: block;
+  height: $row-height;
+  width: 100%;
+}
+
+.directoryLink {
+  display: flex;
+  align-items: center;
+  gap: $row-gap;
+  box-sizing: border-box;
+  height: $row-height;
+  padding-left: calc(var(--directory-level) * $level-indent + $row-padding-start);
+  padding-right: 12px;
+  border-radius: 6px;
+  color: #4a5568;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.expandIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: $expand-size;
+  height: $expand-size;
+  color: var(--active);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--text-color);
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.directoryLinkActive {
+  background: var(--directory-tree-link-active-background);
+  color: var(--active) !important;
+  font-weight: 500;
+  position: relative;
+
+  .icon {
+    color: var(--active);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--active);
+  }
+}
+
+.name {
+  display: block;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: $row-height;
+  height: auto;
+}
+
+.toggleWrapper {
+  z-index: 20;
+  position: absolute;
+  top: 0;
+  left: calc(var(--directory-level) * $level-indent + $row-padding-start);
+  width: $expand-size;
+  height: $row-height;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: 0;
+
+  &:hover,
+  &:focus-visible {
+    cursor: pointer;
+    outline: none;
+
+    svg {
+      fill: var(--active);
+    }
+  }
+}
+
+.toggleIcon {
+  color: var(--directory-tree-color);
+}

@@ -1,0 +1,27 @@
+<!--/*
+    Deliberately not built on the Core Components page: the picker ships as a self-contained
+    application and must render on any AEM instance, including one without the Core Components
+    content package installed.
+
+    Each page names the clientlib categories it needs in its `clientlibs` property, which is what
+    lets the same component serve both the selector and the demo host.
+*/-->
+<!DOCTYPE html>
+<html lang="${currentPage.language.language || 'en'}"
+      data-sly-use.clientlib="/libs/granite/sightly/templates/clientlib.html">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>${currentPage.title || currentPage.name}</title>
+    <sly data-sly-test="${properties.clientlibs}"
+         data-sly-call="${clientlib.css @ categories=properties.clientlibs}"></sly>
+</head>
+<body class="asset-picker-page ${properties.bodyClass}">
+    <!--/* Nest list + resource; path-string includes re-enter this page script. */-->
+    <sly data-sly-list.child="${resource.listChildren}">
+        <sly data-sly-resource="${child @ resourceType=child.resourceType}"></sly>
+    </sly>
+    <sly data-sly-test="${properties.clientlibs}"
+         data-sly-call="${clientlib.js @ categories=properties.clientlibs}"></sly>
+</body>
+</html>

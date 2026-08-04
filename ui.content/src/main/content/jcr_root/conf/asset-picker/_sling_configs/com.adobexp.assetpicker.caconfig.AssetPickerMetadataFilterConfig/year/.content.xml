@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="nt:unstructured"
+    label="Year"
+    propertyPath="./jcr:content/metadata/adobexp:year"
+    fieldType="checkbox"
+    valuesListPath="/etc/acs-commons/lists/adobexp/metadata/year"
+    multiSelectAllowed="{Boolean}true"
+    expanded="{Boolean}true"
+    searchable="{Boolean}true"
+    orderIndex="{Long}10"
+    enabled="{Boolean}true"/>

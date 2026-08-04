@@ -1,0 +1,15 @@
+
+.filter {
+  border-bottom: 1px solid var(--filter-divider);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.content {
+  padding: 4px 0 20px;
+
+  animation: filterContentIn var(--motion-duration-base) var(--motion-ease-out);
+
+}

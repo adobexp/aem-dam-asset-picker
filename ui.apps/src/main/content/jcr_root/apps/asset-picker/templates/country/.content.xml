@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+    jcr:primaryType="cq:Template"
+    jcr:title="Asset Picker : Country"
+    jcr:description="Country / region container under a tenant (e.g. /content/asset-picker/global/us). Holds language pages and optional CA Config editors that apply to all languages beneath it."
+    allowedPaths="^/content/asset-picker/[^/]+$"
+    ranking="{Long}10">
+    <jcr:content
+        jcr:primaryType="cq:PageContent"
+        jcr:title="Country"
+        cq:allowedTemplates="[/apps/asset-picker/templates/language,/apps/asset-picker/templates/config-editor]"
+        sling:resourceType="asset-picker/components/page"/>
+</jcr:root>

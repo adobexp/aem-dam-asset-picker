@@ -1,0 +1,10 @@
+{
+  "allowedRoots": [
+    "/content/dam"
+  ],
+  "defaultRoot": "/content/dam",
+  "defaultPageSize": 100,
+  "maxPageSize": 500,
+  "semanticSearchEnabled": true,
+  "filtersConfigPath": "/conf/asset-picker/settings/asset-picker/filters"
+}

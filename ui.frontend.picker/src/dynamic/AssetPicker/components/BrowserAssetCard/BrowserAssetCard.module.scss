@@ -1,0 +1,486 @@
+@use "../../styles/breakpoints";
+@use "../../styles/mixins";
+
+/* ============================================================
+   CARD CONTAINER
+   ============================================================ */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 12px;
+  background: var(--card-background, #ffffff);
+  /* Visible resting border — was blending into page when too subtle / transparent tokens used elsewhere */
+  border: 1px solid var(--card-border, var(--layout-border, #e5e5e5));
+  /* Keep overflow visible so the ⋮ dropdown isn't clipped; round child panels instead. */
+  overflow: visible;
+  isolation: isolate;
+
+  cursor: pointer;
+  transition:
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    transform 200ms ease,
+    filter 240ms ease,
+    opacity 240ms ease;
+
+  &:hover {
+    border-color: var(--card-border-hover, var(--text-color, #111));
+    box-shadow: var(--card-shadow-hover, 0 6px 20px rgba(0, 0, 0, 0.12));
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--active, #000);
+    outline-offset: 2px;
+  }
+}
+
+/* Selected ring */
+.selectedCard {
+  border-color: var(--active, #000);
+  box-shadow: 0 0 0 2px var(--active, #000);
+}
+
+/* ============================================================
+   RESTRICTED CARD — visually disabled, no interactions
+   ============================================================ */
+.restrictedCard {
+  cursor: not-allowed !important;
+  filter: grayscale(0.5);
+  opacity: 0.65;
+  user-select: none;
+
+  &:hover {
+    border-color: var(--layout-border, #e5e5e5) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  .image {
+    opacity: 0.5;
+    filter: saturate(0.5);
+  }
+
+  .infoPanel,
+  .fileType,
+  .titleWrap,
+  .meta {
+    color: var(--text-color-muted, var(--card-text-muted));
+  }
+
+  .assetName {
+    color: var(--text-color-muted, var(--card-text-muted));
+  }
+
+  .hoverActionDownload,
+  .hoverActionMenu,
+  .menuWrapper {
+    display: none !important;
+  }
+
+  .statusChip {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* ============================================================
+   RESTRICTED OVERLAY (on thumbnail)
+   ============================================================ */
+.restrictedOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-overlay-bg, rgba(0, 0, 0, 0.06));
+  pointer-events: none;
+  z-index: 4;
+}
+
+.restrictedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--card-overlay-action-bg, rgba(0, 0, 0, 0.72));
+  color: var(--card-overlay-action-text, #ffffff);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: var(--card-shadow-elevated, 0 2px 8px rgba(0, 0, 0, 0.18));
+}
+
+.restrictedIcon {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* ============================================================
+   MEDIA AREA — image area with theme-aware background
+   ============================================================ */
+.media {
+  position: relative;
+  background: var(--card-media-bg, #e8e8e8);
+  padding: 14px 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  overflow: hidden;
+}
+
+.imageWrapper {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 4px;
+  background: transparent;
+  cursor: inherit;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    opacity 240ms ease,
+    filter 240ms ease;
+  pointer-events: none;
+}
+
+/* ============================================================
+   HOVER ACTIONS
+   ============================================================ */
+
+/* Single white download circle (light) / inverted in dark, top-right */
+.hoverActionDownload {
+  position: absolute;
+  top: 26px;
+  right: 26px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--card-hover-action-bg, #ffffff);
+  color: var(--card-hover-action-color, #111);
+  text-decoration: none;
+  box-shadow: var(--card-shadow-elevated, 0 2px 8px rgba(0, 0, 0, 0.15));
+  opacity: 0;
+  transform: scale(0.9) translateY(-2px);
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    background-color 180ms ease;
+
+  &:hover {
+    background: var(--card-hover-action-hover-bg, #f5f5f7);
+  }
+}
+
+.card:hover .hoverActionDownload {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+/* 3-dot menu trigger — themed circle, top-right */
+.menuWrapper {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 10;
+}
+
+.hoverActionMenu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--card-hover-menu-bg, #000000);
+  color: var(--card-hover-menu-color, #ffffff);
+  cursor: pointer;
+  box-shadow: var(--card-shadow-elevated, 0 2px 8px rgba(0, 0, 0, 0.2));
+
+  opacity: 0;
+  transform: scale(0.9) translateY(-2px);
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    background-color 180ms ease;
+
+  &:hover {
+    background: var(--card-hover-menu-hover-bg, #1a1a1a);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--active, #000);
+    outline-offset: 2px;
+  }
+}
+
+.card:hover .hoverActionMenu {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+/* Dropdown menu */
+.menuDropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  min-width: 180px;
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--layout-border, #e5e5e5);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: var(--card-shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.12));
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: menuIn 180ms ease-out;
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-color, #111);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--card-menu-item-hover-bg, rgba(0, 0, 0, 0.05));
+    outline: none;
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: var(--card-menu-icon-color, #555);
+  }
+}
+
+/* Selected check indicator */
+.selected {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--active, #000);
+  color: var(--button-primary-color, #ffffff);
+  z-index: 5;
+}
+
+/* ============================================================
+   INFO PANEL (themed background, below media)
+   ============================================================ */
+.infoPanel {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+  background: var(--card-background, #ffffff);
+  gap: 2px;
+  /* Match card radius so bottom corners stay round when overflow is visible */
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* Status chip */
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--card-status-chip-bg, #ececec);
+  color: var(--card-status-chip-text, #555);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+  text-transform: capitalize;
+}
+
+.statusChipRestricted {
+  background: var(--card-status-restricted-bg, rgba(211, 47, 47, 0.1));
+  color: var(--card-status-restricted-text, #d32f2f);
+}
+
+/* File type with label + value */
+.fileType {
+  font-size: 12px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileTypeLabel {
+  color: var(--card-text-subtle, #999);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.fileTypeValue {
+  color: var(--card-text-muted, #555);
+  font-size: 12px;
+}
+
+/* Title */
+.titleWrap {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.assetName {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-color, var(--card-text));
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tooltip */
+.nameTooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--card-tooltip-bg, #000);
+  color: var(--card-tooltip-text, #fff);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+  pointer-events: none;
+  box-shadow: var(--card-shadow-dropdown, 0 4px 12px rgba(0, 0, 0, 0.18));
+}
+
+/* Metadata block */
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--card-text-faint, #777);
+}
+
+.metaLine {
+  margin: 0;
+  color: var(--card-text-faint, #777);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metaLabel {
+  color: var(--card-text-subtle, #999);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.metaValue {
+  color: var(--card-text-muted, #555);
+  font-size: 12px;
+}
+
+.metaLineSubtle {
+  margin: 0;
+  color: var(--card-text-subtle, #999);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  strong {
+    color: var(--card-text-subtle, #999);
+    font-weight: 500;
+    text-transform: none;
+  }
+}
+
+/* Hide global utility */
+.actionBar button:global(.hidden) {
+  display: none;
+}
+
+:global(.hidden) {
+  display: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: breakpoints.$tablet) {
+  .media {
+    padding: 12px 12px 24px;
+  }
+  .infoPanel {
+    padding: 12px;
+  }
+  .assetName {
+    font-size: 14px;
+  }
+}

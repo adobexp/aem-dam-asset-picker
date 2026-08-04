@@ -1,0 +1,97 @@
+{
+  "type": "directory",
+  "path": "/content/dam/picker/products",
+  "name": "Products",
+  "isLeaf": true,
+  "childrenCount": 0,
+  "thumbnail": { "url": "/mocks/thumbs/folder.svg" },
+  "total": 4,
+  "displayed": 4,
+  "time": 11,
+  "items": [
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/products/bottle-front.jpg",
+      "name": "bottle-front.jpg",
+      "title": "Bottle Front",
+      "mime": "image/jpeg",
+      "size": "820 KB",
+      "url": "/content/dam/picker/products/bottle-front.jpg",
+      "resolution": { "width": 2400, "height": 3000, "dpi": 300, "dimensions": "2400 x 3000" },
+      "thumbnail": { "url": "/mocks/thumbs/product-bottle-front.svg" },
+      "originalDownloadUrl": "/content/dam/picker/products/bottle-front.jpg",
+      "renditionDownloadUrl": "/content/dam/picker/products/bottle-front.jpg",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Packshot" },
+        { "label": "Brand", "value": "Aurora" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/products/bottle-angle.jpg",
+      "name": "bottle-angle.jpg",
+      "title": "Bottle Angle",
+      "mime": "image/jpeg",
+      "size": "790 KB",
+      "url": "/content/dam/picker/products/bottle-angle.jpg",
+      "resolution": { "width": 2400, "height": 3000, "dpi": 300, "dimensions": "2400 x 3000" },
+      "thumbnail": { "url": "/mocks/thumbs/product-bottle-angle.svg" },
+      "originalDownloadUrl": "/content/dam/picker/products/bottle-angle.jpg",
+      "renditionDownloadUrl": "/content/dam/picker/products/bottle-angle.jpg",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Packshot" },
+        { "label": "Brand", "value": "Aurora" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/products/carton-render.png",
+      "name": "carton-render.png",
+      "title": "Carton Render",
+      "mime": "image/png",
+      "size": "1.4 MB",
+      "url": "/content/dam/picker/products/carton-render.png",
+      "resolution": { "width": 2000, "height": 2000, "dpi": 150, "dimensions": "2000 x 2000" },
+      "thumbnail": { "url": "/mocks/thumbs/product-carton-render.svg" },
+      "originalDownloadUrl": "/content/dam/picker/products/carton-render.png",
+      "renditionDownloadUrl": "/content/dam/picker/products/carton-render.png",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Render" },
+        { "label": "Brand", "value": "Aurora" },
+        { "label": "Status", "value": "In review" }
+      ]
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/products/spec-sheet.pdf",
+      "name": "spec-sheet.pdf",
+      "title": "Product Spec Sheet",
+      "mime": "application/pdf",
+      "size": "310 KB",
+      "url": "/content/dam/picker/products/spec-sheet.pdf",
+      "resolution": { "width": 1240, "height": 1754, "dpi": 150, "dimensions": "1240 x 1754" },
+      "thumbnail": { "url": "/mocks/thumbs/product-sheet.svg" },
+      "originalDownloadUrl": "/content/dam/picker/products/spec-sheet.pdf",
+      "renditionDownloadUrl": "/content/dam/picker/products/spec-sheet.pdf",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Document" },
+        { "label": "Brand", "value": "Aurora" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    }
+  ]
+}

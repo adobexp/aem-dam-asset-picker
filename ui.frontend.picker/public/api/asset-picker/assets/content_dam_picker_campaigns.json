@@ -1,0 +1,84 @@
+{
+  "type": "directory",
+  "path": "/content/dam/picker/campaigns",
+  "name": "Campaigns",
+  "isLeaf": false,
+  "childrenCount": 1,
+  "thumbnail": { "url": "/mocks/thumbs/folder.svg" },
+  "total": 4,
+  "displayed": 4,
+  "time": 15,
+  "items": [
+    {
+      "type": "directory",
+      "path": "/content/dam/picker/campaigns/spring-2026",
+      "name": "Spring 2026",
+      "isLeaf": true,
+      "childrenCount": 1,
+      "thumbnail": { "url": "/mocks/thumbs/folder.svg" }
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/campaigns/hero-summer.jpg",
+      "name": "hero-summer.jpg",
+      "title": "Summer Hero",
+      "mime": "image/jpeg",
+      "size": "1.8 MB",
+      "url": "/content/dam/picker/campaigns/hero-summer.jpg",
+      "resolution": { "width": 3840, "height": 2160, "dpi": 240, "dimensions": "3840 x 2160" },
+      "thumbnail": { "url": "/mocks/thumbs/campaign-hero-summer.svg" },
+      "originalDownloadUrl": "/content/dam/picker/campaigns/hero-summer.jpg",
+      "renditionDownloadUrl": "/content/dam/picker/campaigns/hero-summer.jpg",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Photography" },
+        { "label": "Campaign", "value": "Summer 2026" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/campaigns/banner-wide.png",
+      "name": "banner-wide.png",
+      "title": "Wide Banner",
+      "mime": "image/png",
+      "size": "640 KB",
+      "url": "/content/dam/picker/campaigns/banner-wide.png",
+      "resolution": { "width": 1920, "height": 480, "dpi": 72, "dimensions": "1920 x 480" },
+      "thumbnail": { "url": "/mocks/thumbs/campaign-banner-wide.svg" },
+      "originalDownloadUrl": "/content/dam/picker/campaigns/banner-wide.png",
+      "renditionDownloadUrl": "/content/dam/picker/campaigns/banner-wide.png",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Banner" },
+        { "label": "Campaign", "value": "Summer 2026" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    },
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/campaigns/teaser.mp4",
+      "name": "teaser.mp4",
+      "title": "Campaign Teaser",
+      "mime": "video/mp4",
+      "size": "18.4 MB",
+      "url": "/content/dam/picker/campaigns/teaser.mp4",
+      "resolution": { "width": 1920, "height": 1080, "dpi": 72, "dimensions": "1920 x 1080" },
+      "thumbnail": { "url": "/mocks/thumbs/campaign-teaser-video.svg" },
+      "originalDownloadUrl": "/content/dam/picker/campaigns/teaser.mp4",
+      "renditionDownloadUrl": "/content/dam/picker/campaigns/teaser.mp4",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Video" },
+        { "label": "Campaign", "value": "Summer 2026" },
+        { "label": "Status", "value": "In review" }
+      ]
+    }
+  ]
+}

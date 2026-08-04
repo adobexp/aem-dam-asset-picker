@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asset Picker Demo Host</title>
+    <link rel="stylesheet" href="/host/demo.css" />
+  </head>
+  <body class="ap-demo">
+    <header class="ap-header">
+      <h1>AEM DAM Asset Picker</h1>
+      <p>
+        Local harness for the bespoke asset picker. Configure the launch options, open the picker, choose assets and
+        confirm the <code>postMessage</code> payload matches the OOTB AEM Asset Picker contract.
+      </p>
+    </header>
+
+    <div class="ap-layout">
+      <div>
+        <section class="ap-card">
+          <div class="ap-card__head">
+            <h2>Launch options</h2>
+            <span>Mapped onto the picker URL</span>
+          </div>
+          <div class="ap-card__body">
+            <form id="ap-options" onsubmit="return false;">
+              <div class="ap-field">
+                <span class="ap-field__label">Theme</span>
+                <div class="ap-segmented">
+                  <label><input type="radio" name="theme" value="light" checked /><span>Light</span></label>
+                  <label><input type="radio" name="theme" value="dark" /><span>Dark</span></label>
+                </div>
+              </div>
+
+              <div class="ap-field">
+                <span class="ap-field__label">Integration style</span>
+                <div class="ap-segmented">
+                  <label><input type="radio" name="style" value="iframe" checked /><span>IFrame</span></label>
+                  <label><input type="radio" name="style" value="modal" /><span>Modal</span></label>
+                  <label><input type="radio" name="style" value="popup" /><span>Popup</span></label>
+                </div>
+              </div>
+
+              <div class="ap-field">
+                <span class="ap-field__label">Selection mode</span>
+                <div class="ap-segmented">
+                  <label><input type="radio" name="mode" value="single" /><span>Single</span></label>
+                  <label><input type="radio" name="mode" value="multiple" checked /><span>Multiple</span></label>
+                </div>
+              </div>
+
+              <div class="ap-field">
+                <span class="ap-field__label">View mode</span>
+                <div class="ap-segmented">
+                  <label><input type="radio" name="viewmode" value="browse" checked /><span>Browse</span></label>
+                  <label><input type="radio" name="viewmode" value="search" /><span>Search</span></label>
+                </div>
+              </div>
+
+              <div class="ap-field">
+                <label for="ap-root">Root path</label>
+                <input
+                  class="ap-input"
+                  id="ap-root"
+                  name="root"
+                  type="text"
+                  value="/content/dam/picker"
+                  list="ap-root-suggestions"
+                />
+                <datalist id="ap-root-suggestions">
+                  <option value="/content/dam/picker"></option>
+                  <option value="/content/dam/picker/brand"></option>
+                  <option value="/content/dam/picker/campaigns"></option>
+                  <option value="/content/dam/picker/products"></option>
+                </datalist>
+              </div>
+
+              <div class="ap-field">
+                <span class="ap-field__label">Mime type</span>
+                <div class="ap-checks">
+                  <label><input type="checkbox" name="mimetype" value="image/jpeg" /> JPEG</label>
+                  <label><input type="checkbox" name="mimetype" value="image/png" /> PNG</label>
+                  <label><input type="checkbox" name="mimetype" value="image/svg+xml" /> SVG</label>
+                  <label><input type="checkbox" name="mimetype" value="image/webp" /> WebP</label>
+                  <label><input type="checkbox" name="mimetype" value="application/pdf" /> PDF</label>
+                  <label><input type="checkbox" name="mimetype" value="video/mp4" /> MP4</label>
+                </div>
+              </div>
+
+              <div class="ap-field">
+                <label for="ap-assettype">Asset type</label>
+                <select class="ap-select" id="ap-assettype" name="assettype">
+                  <option value="">Any</option>
+                  <option value="images">Images</option>
+                  <option value="documents">Documents</option>
+                  <option value="videos">Videos</option>
+                </select>
+              </div>
+
+              <div class="ap-field">
+                <label for="ap-solution">Solution</label>
+                <input class="ap-input" id="ap-solution" name="solution" type="text" placeholder="e.g. sites" />
+              </div>
+
+              <div class="ap-field">
+                <label for="ap-requiredproperty">Required property</label>
+                <input
+                  class="ap-input"
+                  id="ap-requiredproperty"
+                  name="requiredproperty"
+                  type="text"
+                  placeholder="jcr:content/metadata/dc:title"
+                />
+              </div>
+
+              <div class="ap-field">
+                <label for="ap-targetorigin">Target origin</label>
+                <input class="ap-input" id="ap-targetorigin" name="targetorigin" type="text" placeholder="*" />
+              </div>
+
+              <div class="ap-field">
+                <span class="ap-field__label">Metadata filters</span>
+                <div id="ap-filters"></div>
+                <button type="button" class="ap-button ap-button--quiet" id="ap-add-filter">Add filter</button>
+              </div>
+
+              <div class="ap-actions">
+                <input type="button" class="ap-button import_assets_activator" value="Launch Asset Selector"
+                  data-assetpickerurl="/selector.html" />
+                <button type="button" class="ap-button ap-button--quiet" id="ap-reset">Reset</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="ap-card">
+          <div class="ap-card__head">
+            <h2>Picker URL</h2>
+            <span>Live preview</span>
+          </div>
+          <div class="ap-card__body">
+            <div class="ap-url">
+              <code id="ap-url"></code>
+              <button type="button" class="ap-button ap-button--quiet" id="ap-copy-url">Copy</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="ap-card">
+          <div class="ap-card__head">
+            <h2>Event log</h2>
+            <span>Newest first</span>
+          </div>
+          <ul class="ap-log" id="ap-log"></ul>
+        </section>
+      </div>
+
+      <div>
+        <section class="ap-card ap-stage" id="ap-stage">
+          <div class="ap-card__head">
+            <h2>Picker</h2>
+            <span>Rendered in the selected integration style</span>
+          </div>
+          <div class="ap-stage__empty" id="ap-stage-empty">
+            <p>Launch the asset selector to load the picker here.</p>
+          </div>
+          <iframe class="ap-frame" id="ap-frame" title="Asset Picker" hidden></iframe>
+        </section>
+
+        <section class="ap-card">
+          <div class="ap-card__head">
+            <h2>Selected assets</h2>
+            <span id="ap-results-count">0 assets</span>
+          </div>
+          <div class="ap-card__body">
+            <p id="ap-results-empty">Nothing selected yet.</p>
+            <div class="ap-results" id="ap-results"></div>
+          </div>
+          <div class="ap-card__head">
+            <h2>Raw payload</h2>
+            <button type="button" class="ap-button ap-button--quiet" id="ap-copy-json">Copy JSON</button>
+          </div>
+          <pre class="ap-json" id="ap-json">// The postMessage payload will appear here.</pre>
+        </section>
+      </div>
+    </div>
+
+    <div class="ap-modal" id="ap-modal" hidden>
+      <div class="ap-modal__dialog" role="dialog" aria-label="Asset Picker">
+        <div class="ap-modal__head">
+          <span>Select assets</span>
+          <button type="button" class="ap-iconbutton" id="ap-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <iframe id="ap-modal-frame" title="Asset Picker"></iframe>
+      </div>
+    </div>
+
+    <script src="/host/demo.js"></script>
+    <script>
+      new EventSource("/esbuild").addEventListener("change", () => location.reload());
+    </script>
+  </body>
+</html>

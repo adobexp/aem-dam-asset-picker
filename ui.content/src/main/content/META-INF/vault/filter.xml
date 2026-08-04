@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/content/asset-picker"/>
+    <filter root="/conf/asset-picker"/>
+    <filter root="/etc/acs-commons/lists/adobexp"/>
+    <filter root="/content/dam/adobexp/samples"/>
+</workspaceFilter>

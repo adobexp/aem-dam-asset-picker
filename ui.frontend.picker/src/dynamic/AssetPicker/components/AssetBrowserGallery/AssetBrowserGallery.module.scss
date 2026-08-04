@@ -1,0 +1,161 @@
+@use "../../styles/breakpoints";
+@use "../../styles/mixins";
+
+
+.loader {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.loadingState {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 24px 32px;
+  overflow: auto;
+
+  @media (max-width: breakpoints.$tablet) {
+    padding: 16px 16px 24px;
+  }
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 28px;
+  align-items: start;
+
+  @media (max-width: breakpoints.$tablet) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.skeletonCard {
+  min-width: 0;
+  border: 1px solid var(--layout-border, #e8e8e8);
+  border-radius: 16px;
+  background: var(--background, #ffffff);
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgb(15 23 42 / 0.04);
+}
+
+.skeletonMedia,
+.skeletonLine {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    rgba(226, 229, 235, 0.7) 0%,
+    rgba(245, 246, 248, 0.95) 44%,
+    rgba(226, 229, 235, 0.7) 100%
+  );
+  background-size: 240% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonMedia {
+  aspect-ratio: 1 / 1;
+  min-height: 272px;
+}
+
+.skeletonContent {
+  display: grid;
+  gap: 18px;
+  padding: 18px 16px 20px;
+}
+
+.skeletonLine {
+  height: 42px;
+  border-radius: 12px;
+}
+
+.skeletonLineShort {
+  width: 78%;
+}
+
+.skeletonLoadingText {
+  color: var(--text-color-muted, #7f8792);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.5;
+  font-size: 1.25rem;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.directoryError {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ============================================================
+   Wrapper  ──  Action bar (top) + Items (fills below)
+   ============================================================ */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.items {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: calc(232px + 2 * 60px);
+  position: relative;
+  padding: 0px 24px 0;
+  box-sizing: border-box;
+  background: var(--content-background, var(--background));
+
+  @media (max-width: breakpoints.$tablet) {
+    padding: 16px 16px 0;
+    min-width: 0;
+  }
+}
+
+.viewContainer {
+  width: 100%;
+  height: 100%;
+  display: block;                
+  position: relative;
+  animation: fadeScaleIn 0.25s ease;
+  will-change: opacity, transform;
+}
+
+@keyframes fadeScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

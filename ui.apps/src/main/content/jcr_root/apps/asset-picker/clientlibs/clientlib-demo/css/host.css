@@ -1,0 +1,7 @@
+/*
+ * In the local harness `.ap-demo` is the body element, so its own margin reset is enough. On an
+ * AEM page it is a div inside the body, which still carries the browser default margin.
+ */
+body.asset-picker-page {
+  margin: 0;
+}

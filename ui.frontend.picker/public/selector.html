@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asset Picker</title>
+    <link rel="stylesheet" href="/static/index.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #fff;
+      }
+      #picker {
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Local stand-in for /apps/asset-picker/components/selector. The data-config payload
+      is the same JSON the Sling model emits in AEM, so the SPA cannot tell the two apart.
+    -->
+    <div
+      id="picker"
+      class="__react-cmp"
+      data-react-component="AssetPicker"
+      data-config='{
+        "apiBase": "/bin/asset-picker",
+        "rootLabel": "Picker",
+        "rootDirectories": ["/content/dam/picker"],
+        "displayDirectoryNames": true,
+        "theme": "light",
+        "viewMode": "grid",
+        "selectionMode": "multiple",
+        "pickerViewMode": "browse",
+        "targetOrigin": "*",
+        "showSearch": true,
+        "searchPageSize": 5,
+        "collapsibleFilters": true,
+        "metadataView": "horizontal",
+        "enableTypes": true,
+        "enableDpiView": true,
+        "enableDetailedView": true,
+        "enableDirectorySidebarCollapse": true,
+        "showActionIcons": true,
+        "showSemanticSearch": true,
+        "showFuzzySearch": true,
+        "sort": [
+          { "id": "jcr:content/jcr:title", "name": "Title" },
+          { "id": "jcr:content/jcr:lastModified", "name": "Last modified" },
+          { "id": "jcr:content/metadata/dam:size", "name": "Size" }
+        ],
+        "filters": [
+          {
+            "id": "jcr:content/metadata/dam:assetType",
+            "name": "Asset type",
+            "type": "checkbox",
+            "expanded": true,
+            "value": [],
+            "values": [
+              { "id": "Logo", "name": "Logo" },
+              { "id": "Photography", "name": "Photography" },
+              { "id": "Packshot", "name": "Packshot" },
+              { "id": "Render", "name": "Render" },
+              { "id": "Illustration", "name": "Illustration" },
+              { "id": "Banner", "name": "Banner" },
+              { "id": "Video", "name": "Video" },
+              { "id": "Document", "name": "Document" }
+            ]
+          },
+          {
+            "id": "jcr:content/metadata/dc:publisher",
+            "name": "Brand",
+            "type": "select",
+            "expanded": true,
+            "value": null,
+            "values": [
+              { "id": "Corporate", "name": "Corporate" },
+              { "id": "Aurora", "name": "Aurora" }
+            ]
+          },
+          {
+            "id": "jcr:content/metadata/dam:status",
+            "name": "Status",
+            "type": "radio",
+            "expanded": false,
+            "value": null,
+            "values": [
+              { "id": "Approved", "name": "Approved" },
+              { "id": "In review", "name": "In review" }
+            ]
+          },
+          {
+            "id": "jcr:content/metadata/dc:subject",
+            "name": "Keyword",
+            "type": "text",
+            "expanded": false,
+            "value": null
+          }
+        ]
+      }'
+    ></div>
+    <script type="module" src="/static/index.js"></script>
+    <script>
+      new EventSource("/esbuild").addEventListener("change", () => location.reload());
+    </script>
+  </body>
+</html>

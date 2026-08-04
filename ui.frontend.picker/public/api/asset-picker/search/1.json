@@ -1,0 +1,121 @@
+{
+  "type": "directory",
+  "path": "/api/search",
+  "name": "Search results",
+  "hasNextPage": true,
+  "total": 15,
+  "displayed": 11,
+  "time": 76,
+  "items": [
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/brand-kit/logos/logo-primary-light.png",
+      "name": "Logo Primary \u2014 Light BG",
+      "mime": "image/png",
+      "resolution": {
+        "width": 2000,
+        "height": 600,
+        "dpi": 72,
+        "dimensions": "10H x 3W"
+      },
+      "size": "240 KB",
+      "originalDownloadUrl": "https://picsum.photos/seed/logo-light/2000/600",
+      "renditionDownloadUrl": "https://picsum.photos/seed/logo-light-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/logo-light/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/brand-kit/logos/logo-icon.svg",
+      "name": "Logo Icon Mark",
+      "mime": "image/svg+xml",
+      "resolution": {
+        "width": 512,
+        "height": 512,
+        "dpi": 72,
+        "dimensions": "1H x 1W"
+      },
+      "size": "18 KB",
+      "originalDownloadUrl": "https://picsum.photos/seed/logo-icon/512/512",
+      "renditionDownloadUrl": "https://picsum.photos/seed/logo-icon-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/logo-icon/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/social/instagram/reel-cover.jpg",
+      "name": "Reel Cover \u2014 Weekend Vibes",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 1080,
+        "height": 1920,
+        "dpi": 72,
+        "dimensions": "9H x 16W"
+      },
+      "size": "640 KB",
+      "originalDownloadUrl": "https://picsum.photos/seed/ig-reel/1080/1920",
+      "renditionDownloadUrl": "https://picsum.photos/seed/ig-reel-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/ig-reel/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-1/social/linkedin/thought-leadership.jpg",
+      "name": "Thought Leadership Banner",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 1200,
+        "height": 627,
+        "dpi": 72,
+        "dimensions": "1.91H x 1W"
+      },
+      "size": "390 KB",
+      "originalDownloadUrl": "https://picsum.photos/seed/li-thought/1200/627",
+      "renditionDownloadUrl": "https://picsum.photos/seed/li-thought-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/li-thought/400/300"
+      }
+    },
+    {
+      "type": "asset",
+      "downloadEnabled": true,
+      "shareEnabled": true,
+      "cartEnabled": true,
+      "path": "/api/assets/root-2/festival-stage.jpg",
+      "name": "Festival Stage Branding",
+      "mime": "image/jpeg",
+      "resolution": {
+        "width": 4000,
+        "height": 2250,
+        "dpi": 72,
+        "dimensions": "16H x 9W"
+      },
+      "size": "6.8 MB",
+      "originalDownloadUrl": "https://picsum.photos/seed/event-stage/4000/2250",
+      "renditionDownloadUrl": "https://picsum.photos/seed/event-stage-r/800/450",
+      "detailsUrl": "/image.html",
+      "thumbnail": {
+        "url": "https://picsum.photos/seed/event-stage/400/300"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:adobexp="http://www.adobexp.com/jcr/adobexp/1.0"
+    jcr:primaryType="dam:AssetContent"
+    cq:name="sample-audio-2023-archived.svg"
+    dam:assetState="processed">
+    <metadata
+        jcr:primaryType="nt:unstructured"
+        jcr:mixinTypes="[cq:Taggable]"
+        dc:format="image/svg+xml"
+        dc:title="sample-audio-2023-archived"
+        adobexp:year="2023"
+        adobexp:asset-type="Audio"
+        adobexp:status="Archived"/>
+    <related jcr:primaryType="nt:unstructured"/>
+</jcr:root>

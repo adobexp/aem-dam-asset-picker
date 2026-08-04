@@ -1,0 +1,22 @@
+{
+  "type": "asset",
+  "path": "/content/dam/picker/brand/logo-primary.svg",
+  "name": "logo-primary.svg",
+  "title": "Primary Logo",
+  "mime": "image/svg+xml",
+  "size": "24 KB",
+  "url": "/content/dam/picker/brand/logo-primary.svg",
+  "resolution": { "width": 1024, "height": 1024, "dpi": 72, "dimensions": "1024 x 1024" },
+  "thumbnail": { "url": "/mocks/thumbs/brand-logo-primary.svg" },
+  "originalDownloadUrl": "/content/dam/picker/brand/logo-primary.svg",
+  "renditionDownloadUrl": "/content/dam/picker/brand/logo-primary.svg",
+  "downloadEnabled": false,
+  "shareEnabled": false,
+  "cartEnabled": false,
+  "metadata": [
+    { "label": "Asset type", "value": "Logo" },
+    { "label": "Brand", "value": "Corporate" },
+    { "label": "Status", "value": "Approved" },
+    { "label": "Description", "value": "Primary corporate logo, full colour, for light backgrounds." }
+  ]
+}

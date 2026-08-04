@@ -1,0 +1,48 @@
+[
+  {
+    "id": "jcr:content/metadata/dam:assetType",
+    "name": "Asset type",
+    "type": "checkbox",
+    "expanded": true,
+    "value": [],
+    "values": [
+      { "id": "Logo", "name": "Logo" },
+      { "id": "Photography", "name": "Photography" },
+      { "id": "Packshot", "name": "Packshot" },
+      { "id": "Render", "name": "Render" },
+      { "id": "Illustration", "name": "Illustration" },
+      { "id": "Banner", "name": "Banner" },
+      { "id": "Video", "name": "Video" },
+      { "id": "Document", "name": "Document" }
+    ]
+  },
+  {
+    "id": "jcr:content/metadata/dc:publisher",
+    "name": "Brand",
+    "type": "select",
+    "expanded": true,
+    "value": null,
+    "values": [
+      { "id": "Corporate", "name": "Corporate" },
+      { "id": "Aurora", "name": "Aurora" }
+    ]
+  },
+  {
+    "id": "jcr:content/metadata/dam:status",
+    "name": "Status",
+    "type": "radio",
+    "expanded": false,
+    "value": null,
+    "values": [
+      { "id": "Approved", "name": "Approved" },
+      { "id": "In review", "name": "In review" }
+    ]
+  },
+  {
+    "id": "jcr:content/metadata/dc:subject",
+    "name": "Keyword",
+    "type": "text",
+    "expanded": false,
+    "value": null
+  }
+]

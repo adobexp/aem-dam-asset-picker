@@ -1,0 +1,444 @@
+@use "../../styles/breakpoints";
+
+/* ============================================================
+   Panel root
+   ============================================================ */
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 24px 0;
+  background-color: var(--settings-panel-background);
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    padding: 12px 16px 0;
+  }
+}
+
+.searchPanel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ============================================================
+   Single toolbar — LTR controls
+   ============================================================ */
+/* The picker is routinely embedded in an 800px popup or a narrow iframe, so the toolbar
+   wraps at every width rather than only below the tablet breakpoint. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    gap: 10px;
+  }
+}
+
+.leftControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.expandButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-color);
+  animation: expandIconIn var(--motion-duration-base, 340ms) var(--motion-ease-emphasized, ease) forwards;
+  transition:
+    background-color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease),
+    color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease),
+    transform 140ms var(--motion-ease-standard, ease);
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--directory-tree-active);
+    color: var(--active);
+    outline: none;
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+:global([data-asset-browser-theme="dark"]) .expandButton {
+  filter: invert(1);
+}
+
+.expandIcon {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+@keyframes expandIconIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Search pill + Search button — grows to fill space before right actions */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.searchWrapper > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  flex: 0 0 auto;
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.sortControl {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.viewControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pickerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
+  /* Match toolbar control height / radius (sort, view toggle, etc.) */
+  button {
+    box-sizing: border-box;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--button-background, #000);
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1;
+  }
+}
+
+.cancelButton {
+  background: transparent;
+  color: var(--text-color);
+  border-color: var(--layout-border, #e5e5e5) !important;
+}
+
+.selectButton {
+  background: var(--button-background, #000);
+  color: var(--button-color, #fff);
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    background: var(--button-background-hover, var(--button-background-active, #1a1a1a));
+    color: var(--button-color-hover, var(--button-color-active, #fff));
+  }
+
+  &:active:not(:disabled) {
+    background: var(--button-background-active, #1a1a1a);
+    color: var(--button-color-active, #fff);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.assetCount {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-color-muted, #6b6b6b);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+
+  strong {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-left: 4px;
+  }
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Mobile search toggle (back-compat)
+   ============================================================ */
+.searchToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--settings-panel-button-color);
+  cursor: pointer;
+  font-size: 22px;
+  transition: background-color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease);
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgba(0, 0, 0, 0.06);
+    outline: none;
+  }
+
+  @media (width > #{breakpoints.$tablet}) {
+    &.hideOnDesktop {
+      display: none;
+    }
+  }
+}
+
+/* ============================================================
+   Card view toggle button (preserved animations)
+   ============================================================ */
+.cardViewToggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: var(--browser-view-toggle-background);
+  color: var(--active);
+  cursor: pointer;
+  overflow: visible;
+  transition:
+    background-color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease),
+    color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease),
+    border-color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease),
+    transform 140ms var(--motion-ease-standard, ease);
+
+  &:hover {
+    color: var(--active);
+    border-color: var(--active);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--active);
+    outline-offset: 2px;
+  }
+}
+
+.cardViewIcon {
+  position: relative;
+  z-index: 2;
+  font-size: 18px;
+  transition:
+    transform var(--motion-duration-base, 340ms) var(--motion-ease-standard, ease),
+    color var(--motion-duration-fast, 240ms) var(--motion-ease-standard, ease);
+}
+
+.cardViewPulse {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--active);
+  opacity: 0.85;
+  pointer-events: none;
+  animation: cardViewPulseRing 1.8s ease-out infinite;
+  z-index: 1;
+}
+
+.cardViewToggleActive {
+  background: var(--active);
+  color: var(--button-color);
+  border-color: var(--active);
+
+  .cardViewIcon {
+    color: var(--button-color);
+    transform: rotate(20deg) scale(1.1);
+  }
+
+  .cardViewPulse {
+    border-color: var(--active);
+    animation: cardViewGlow 2.2s ease-in-out infinite;
+  }
+
+  &:hover {
+    background: var(--button-background-active, var(--active));
+    color: var(--button-color);
+    filter: brightness(1.05);
+  }
+}
+
+@keyframes cardViewPulseRing {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@keyframes cardViewGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--active);
+    opacity: 0.7;
+  }
+  50% {
+    box-shadow: 0 0 12px 2px var(--active);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardViewPulse {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .cardViewToggle:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   RESULT TABS — All / Files / Folders (shown only when searching/filtering)
+   ============================================================ */
+.resultTabsRow {
+  /* Break out of .panel horizontal padding so the bottom border
+     spans the full content width to the right edge */
+  width: calc(100% + 48px);
+  margin: 12px -24px 0;
+  padding: 0 24px; /* match .breadcrumbsRow horizontal inset */
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  border-bottom: 1px solid var(--layout-border, #e5e5e5);
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    width: calc(100% + 32px);
+    margin: 12px -16px 0;
+    padding: 0 16px;
+  }
+}
+
+.resultTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-muted, rgba(0, 0, 0, 0.55));
+  cursor: pointer;
+  transition: color 0.18s ease;
+
+  /* Align first tab label with breadcrumbs first item (row already pads 24px) */
+  &:first-child {
+    padding-left: 0;
+
+    &::after {
+      left: 0;
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -1px;
+    height: 2px;
+    background: transparent;
+    transition: background 0.18s ease;
+  }
+
+  &:hover {
+    color: var(--text-color, #111);
+  }
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    padding: 10px 12px;
+    font-size: 13px;
+
+    &:first-child {
+      padding-left: 0;
+    }
+  }
+}
+
+.resultTabActive {
+  color: var(--text-color, #111);
+  font-weight: 600;
+
+  &::after {
+    background: var(--active, #000);
+  }
+}
+
+.resultTabCount {
+  font-weight: 500;
+  color: inherit;
+  opacity: 0.85;
+}

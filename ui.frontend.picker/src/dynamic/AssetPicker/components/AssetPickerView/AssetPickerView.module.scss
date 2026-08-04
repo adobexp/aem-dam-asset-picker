@@ -1,0 +1,706 @@
+@use "../../../AssetPicker/styles/breakpoints";
+@use "../../../AssetPicker/styles/mixins";
+
+// ============================================================
+// Local responsive helpers
+// ============================================================
+$mobile-max: #{breakpoints.$tablet - 1};
+$tablet-min: breakpoints.$tablet;
+$tablet-max: 1024px;
+
+// ============================================================
+// Root  ──  Sidebar (full height) | Right column
+// ============================================================
+.assetPicker,
+.assetPicker * {
+  box-sizing: border-box;
+}
+
+.assetPicker {
+  background: var(--content-background, var(--background));
+  display: grid;
+  grid-template-columns: auto 1fr;   // ← sidebar | right column
+  grid-template-rows: minmax(0, 1fr); // ← cap row so children can scroll
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+
+  color: var(--text-color);
+  font-size: var(--font-size, 14px);
+  line-height: 18px;
+  position: relative;
+  gap: 0;
+  overflow: hidden;
+
+  /* Grid items default to min-height:auto and grow with content — that kills sidebar scroll. */
+  > * {
+    min-height: 0;
+    min-width: 0;
+  }
+
+transition: grid-template-columns var(--motion-duration-slow) var(--motion-ease-emphasized);
+
+
+ &:not(.ready) * {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+
+  /* Disable width animation while dragging so resize feels direct */
+  &.sidebarResizing,
+  &.sidebarResizing .sidebarWrapper {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  &.sidebarResizing {
+    cursor: ew-resize;
+  }
+
+
+  a {
+    color: var(--text-color);
+  }
+
+  @media (max-width: #{$mobile-max}) {
+    // On mobile: single column, sidebar becomes overlay drawer
+    grid-template-columns: 1fr;
+  }
+
+  // AEM editor ContentFrame sizes the iframe to document height. Viewport
+  // units track that iframe, so calc(100dvh - …) re-expands forever.
+  // While authoring, size to content instead (fixed px min — never vh/dvh).
+  :global(html[class*="aem-AuthorLayer-"]) & {
+    height: auto;
+    min-height: 480px;
+    overflow: visible;
+  }
+}
+
+
+.assetPicker.sidebarHidden {
+  grid-template-columns: 1fr;
+}
+
+// ============================================================
+// Blocking loader
+// ============================================================
+.blockingLoader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--blocking-loader-background);
+  z-index: 1000;
+}
+
+// ============================================================
+// Mobile drawer backdrop
+// ============================================================
+.mobileBackdrop {
+  display: none;
+}
+
+@media (max-width: #{$mobile-max}) {
+  .mobileBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: var(--mobile-drawer-backdrop, rgb(0 0 0 / 45%));
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .mobileBackdropVisible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+// ============================================================
+// LEFT  ──  Sidebar (full viewport height)
+// ============================================================
+/* ============================================================
+   LEFT  ──  Sidebar (full viewport height)
+   ============================================================ */
+.sidebarWrapper {
+  position: relative;
+  z-index: 2; /* above right column so resize grip can paint across the divider */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  /* Keep overflow visible so the resize grip can extend past the border into the main pane.
+     Tree/filter scrolling lives on .sidebarContent / Filters.body / DirectoryTree. */
+  overflow: visible;
+  background-color: var(--directory-tree-background);
+  border-right: 2px solid var(--layout-border);
+  box-shadow: var(--directory-tree-shadow);
+  width: var(--sidebar-width);
+
+  /* Slide-in animation on mount (when expanding from collapsed) */
+  transform-origin: left center;
+  
+transition:
+    width var(--motion-duration-slow) var(--motion-ease-emphasized),
+    transform var(--motion-duration-slow) var(--motion-ease-emphasized),
+    box-shadow var(--motion-duration-slow) var(--motion-ease-emphasized);
+  animation: sidebarSlideIn var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+
+  will-change: width, transform;
+
+  &.collapsed {
+    width: 48px;
+    min-width: 48px;
+  }
+
+  /* Tablet */
+  @media (min-width: #{$tablet-min}) and (max-width: #{$tablet-max}) {
+    width: clamp(220px, 28vw, 280px);
+
+    &.collapsed {
+      width: 48px;
+      min-width: 48px;
+    }
+  }
+
+  /* Mobile drawer */
+  @media (max-width: #{$mobile-max}) {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 86vw;
+    max-width: 360px;
+    min-width: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    border-top: none;
+    box-shadow: none;
+    animation: none; /* drawer handles its own slide via transform */
+
+    &:not(.collapsed) {
+      transform: translateX(0);
+      box-shadow: 4px 0 24px rgb(0 0 0 / 22%);
+    }
+
+    &.collapsed {
+      width: 86vw;
+      max-width: 360px;
+      min-width: 0;
+      transform: translateX(-100%);
+    }
+  }
+}
+
+@keyframes sidebarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// ============================================================
+// Sidebar header
+// ============================================================
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 22px 28px 18px 16px;
+  transition: all 0.25s ease;
+  min-height: 60px;
+  flex: 0 0 auto;
+
+  @media (max-width: #{$mobile-max}) {
+    padding: 14px 14px;
+  }
+}
+
+.sidebarTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.sidebarHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.sidebarWrapper.collapsed .sidebarHeader {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 12px 4px;
+
+  @media (max-width: #{$mobile-max}) {
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 14px;
+  }
+}
+
+.sidebarWrapper.collapsed .sidebarHeaderActions {
+  flex-direction: column;
+  gap: 6px;
+
+  @media (max-width: #{$mobile-max}) {
+    flex-direction: row;
+    gap: 4px;
+  }
+}
+
+// ============================================================
+// Sidebar toggle button
+// ============================================================
+.sidebarToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--text-color);
+  background: transparent;
+  border-radius: 6px;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--directory-tree-active);
+    border-color: var(--active);
+    color: var(--directory-tree-link-active);
+    outline: none;
+  }
+}
+
+
+[data-asset-browser-theme="dark"] .sidebarToggle {
+  filter: invert(1);
+}
+
+
+.toggleIcon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// ============================================================
+// Switcher button
+// ============================================================
+.switcherButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid var(--layout-border);
+  border-radius: 6px;
+  color: var(--directory-tree-color);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--active);
+    color: var(--directory-tree-link-active);
+    background-color: var(--directory-tree-link-active-background);
+    outline: none;
+
+    svg {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 340px) {
+    .label {
+      display: none;
+    }
+  }
+}
+
+.sidebarWrapper.collapsed .switcherButton {
+  width: 32px;
+  padding: 0;
+  justify-content: center;
+
+  .label {
+    display: none;
+  }
+}
+
+@media (min-width: #{$tablet-min}) and (max-width: #{$tablet-max}) {
+  .switcherButton .label {
+    display: none;
+  }
+
+  .switcherButton {
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: #{$mobile-max}) {
+  .switcherButton .label {
+    display: inline;
+  }
+
+  .switcherButton {
+    width: auto;
+    padding: 0 10px;
+  }
+}
+
+.label {
+  transition: opacity 0.2s ease, width 0.2s ease;
+  white-space: nowrap;
+}
+
+.sidebarWrapper.collapsed .sidebarTitle {
+  display: none;
+}
+
+// ============================================================
+// Sidebar content area
+// ============================================================
+.sidebarContent {
+  flex: 1 1 auto;
+  min-height: 0; /* allow child to shrink so it can scroll */
+  display: flex;
+  flex-direction: column;
+  /* Clip here; Filter body and DirectoryTree own the scrollbars. */
+  overflow: hidden;
+  position: relative;
+  background-color: var(--directory-tree-background);
+  color: var(--directory-tree-color);
+  font-size: 16px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  a {
+    color: var(--directory-tree-color);
+
+    &:hover {
+      color: var(--directory-tree-link-active);
+    }
+  }
+
+  @media (max-width: #{$mobile-max}) {
+    font-size: 15px;
+  }
+}
+
+.sidebarWrapper.collapsed .sidebarContent {
+  opacity: 0;
+  transform: translateX(-8px);
+  pointer-events: none;
+}
+
+.filtersContent {
+  flex: 1 1 auto;
+  min-height: 0; /* critical for Filters.body overflow-y:auto + sticky footer */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+
+  background-color: var(--filters-background);
+  color: var(--filters-color);
+
+  @media (max-width: #{$mobile-max}) {
+    padding: 0.75rem 1rem 1.5rem;
+  }
+}
+
+// ============================================================
+// Resize handle (desktop only)
+// ============================================================
+.resize {
+  position: absolute;
+  /* Center the hit area on the border so the 20px grip straddles both panes */
+  right: -11px;
+  top: 0;
+  bottom: 0;
+  width: 22px;
+  cursor: ew-resize;
+  z-index: 110;
+  touch-action: none;
+
+  @media (max-width: #{$tablet-max}) {
+    display: none;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    transition: opacity 150ms ease;
+    opacity: 0;
+    background-color: var(--active);
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+
+  &.resizeActive::before,
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+.resizeGrip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 44px;
+  border-radius: 10px;
+  background-color: var(--card-background, #fff);
+  border: 1px solid var(--layout-border);
+  color: var(--text-color);
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.9;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 18%);
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.resize:hover .resizeGrip,
+.resize.resizeActive .resizeGrip {
+  opacity: 1;
+  background-color: var(--active);
+  color: #fff;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+// ============================================================
+// RIGHT COLUMN  ──  SettingsPanel (top) + Main (bottom)
+// ============================================================
+.rightColumn {
+  position: relative;
+  z-index: 1; /* below sidebar so the resize grip is not covered */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+// ============================================================
+// Settings panel (search header) — now lives in right column
+// ============================================================
+.settingsPanel {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none; /* single toolbar (+ optional result tabs) sizes to content */
+  border-bottom: var(--border-color);
+  background: var(--settings-panel-background, var(--background));
+
+  @media (max-width: #{$mobile-max}) {
+    min-height: auto;
+    max-height: none;
+    padding: 0;
+  }
+}
+
+// ============================================================
+// Main content (gallery / search results)
+// ============================================================
+.main {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: var(--main-box-shadow);
+  position: relative;
+  background: var(--content-background, var(--background));
+  /* Header (title + toolbar + breadcrumbs) is in normal flex flow — no offset needed */
+  margin-top: 0;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--layout-border);
+    border-radius: 5px;
+
+    &:hover {
+      background: var(--active);
+    }
+  }
+
+  @media (max-width: #{$mobile-max}) {
+    box-shadow: none;
+  }
+}
+
+
+.assetPicker.searchActive .main {
+  margin-top: 0;
+}
+
+
+// ============================================================
+// Collapsed vertical label (desktop/tablet only)
+// ============================================================
+.collapsedLabel {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 16px 0;
+  cursor: pointer;
+  color: var(--text-color-muted, rgba(128, 128, 128, 0.7));
+  transition: color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--active);
+    outline: none;
+  }
+
+  @media (max-width: #{$mobile-max}) {
+    display: none;
+  }
+}
+
+.collapsedLabelText {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-orientation: mixed;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ============================================================
+   Sidebar header tabs (Filter / Tree)
+   ============================================================ */
+.sidebarTabs {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+}
+
+.sidebarTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 2px;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--filter-section-meta-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+  }
+
+  &:hover {
+    color: var(--text-color);
+  }
+
+  &:focus-visible {
+    outline: none;
+    color: var(--text-color);
+
+    &::after {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+.sidebarTabActive {
+  color: var(--text-color);
+  font-weight: 600;
+
+  &::after {
+    background-color: var(--active);
+  }
+}
+
+/* Collapsed sidebar: hide the tabs entirely (only chevron is visible) */
+.sidebarWrapper.collapsed .sidebarTabs {
+  display: none;
+}
+
+.breadcrumbsRow {
+  margin-top: 12px;
+  padding: 0 24px 8px;
+
+  @media (max-width: #{$mobile-max}) {
+    padding: 0 16px 6px;
+  }
+}

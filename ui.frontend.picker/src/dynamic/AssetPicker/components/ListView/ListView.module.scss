@@ -1,0 +1,361 @@
+/* ============================================================
+   Table container
+   Allow overflow so row hover shadow / radius aren't clipped at
+   the top and right edges of the virtualized list viewport.
+   ============================================================ */
+.tableContainer {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding: 8px 16px 16px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--background);
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.tableHeader {
+  display: flex;
+  align-items: center;
+
+  color: var(--text-color-muted, var(--card-text-subtle, #999));
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+
+  padding: 12px 0;
+  margin-bottom: 12px;
+
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--layout-border);
+  border-radius: 0;
+  box-shadow: none;
+
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.tableHeaderCell {
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.tableHeaderCell:nth-child(2) {
+  flex-grow: 1;
+}
+
+/* ============================================================
+   Body container
+   ─ Allow overflow visible so first row's hover lift doesn't get
+   clipped at the top edge by the parent's hidden overflow.
+   ============================================================ */
+.tableBodyContainer {
+  height: calc(100% - 60px);
+  width: 100%;
+  overflow: visible;       /* ← was hidden — fixes first-row hover outline clipping */
+}
+
+/* ============================================================
+   Row
+   ============================================================ */
+.tableRow {
+  display: flex;
+  align-items: center;
+
+  height: 80px !important;
+  margin: 0 0 8px; /* horizontal inset comes from ListInner padding — avoids right-edge clip */
+  border-radius: 12px;
+  /* Do NOT set overflow:hidden here — it clips the row's own hover shadow/border */
+
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--card-border, var(--layout-border, #e5e5e5));
+  box-shadow: none;
+  box-sizing: border-box;
+
+  transition:
+    border-color 240ms ease,
+    background 240ms ease,
+    box-shadow 240ms ease,
+    color 240ms ease;
+
+  &:hover {
+    border-color: var(--card-border-hover, var(--text-color, #111));
+    background: var(--card-background, #ffffff);
+    box-shadow: var(--card-shadow-hover, 0 6px 18px rgba(0, 0, 0, 0.12));
+    /* No translateY — vertical lift was clipped by react-window on the first row */
+  }
+}
+
+/* Clickable row hint */
+.tableRowClickable {
+  cursor: pointer;
+
+  &:hover .nameText {
+    color: var(--active, #000);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--active, #000);
+    outline-offset: 2px;
+  }
+}
+
+/* Picked row */
+.tableRowSelected {
+  border-color: var(--active, #000);
+  box-shadow: 0 0 0 1px var(--active, #000);
+
+  &:hover {
+    border-color: var(--active, #000);
+  }
+}
+
+.selectControl {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--active, #000);
+}
+
+/* Restricted row — visually disabled */
+.tableRowRestricted {
+  filter: grayscale(0.4);
+  opacity: 0.7;
+  cursor: not-allowed;
+
+  &:hover {
+    border-color: var(--layout-border, #e5e5e5);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .previewImage {
+    opacity: 0.6;
+  }
+}
+
+/* ============================================================
+   Cells
+   ============================================================ */
+.rowCell {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--text-color, #202020);
+}
+
+.rowCell:nth-child(2) {
+  flex-grow: 1;
+}
+
+.rowCell:last-child {
+  justify-content: flex-end;
+}
+
+.cellValue {
+  color: var(--text-color, #202020);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cellMuted {
+  color: var(--text-color-muted, var(--card-text-subtle, #999));
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* ============================================================
+   Preview cell
+   ============================================================ */
+.imageWrapper {
+  display: inline-flex;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.previewWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-media-bg, #e8e8e8);
+  border-radius: 8px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.previewImage {
+  width: 72px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--card-image-background);
+  display: block;
+  transition: opacity 240ms ease;
+}
+
+.previewRestricted {
+  .previewImage {
+    opacity: 0.5;
+    filter: saturate(0.5);
+  }
+}
+
+.previewLock {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-overlay-action-bg, rgba(0, 0, 0, 0.72));
+  color: var(--card-overlay-action-text, #ffffff);
+  border-radius: 50%;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ============================================================
+   Folder icon
+   ============================================================ */
+.iconWrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 72px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--list-icon-background, var(--card-media-bg, #e8e8e8));
+  overflow: hidden;
+
+  &.withThumbnail {
+    background-image: var(--folder-bg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.35),
+      transparent 75%
+    );
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+.icon {
+  color: var(--list-icon-color, var(--text-color-muted, #555));
+  z-index: 2;
+
+  .withThumbnail & {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 22px;
+    height: 22px;
+    padding: 3px;
+    border-radius: 6px;
+    background: var(--card-overlay-action-bg, rgba(0, 0, 0, 0.72));
+    color: var(--card-overlay-action-text, #ffffff);
+  }
+}
+
+/* ============================================================
+   Name cell
+   ============================================================ */
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.nameText {
+  color: var(--text-color, #202020);
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 200ms ease;
+}
+
+/* ============================================================
+   Status chip (matches card)
+   ============================================================ */
+.statusChip {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--card-status-chip-bg, #ececec);
+  color: var(--card-status-chip-text, #555);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+}
+
+.statusChipRestricted {
+  background: var(--card-status-restricted-bg, rgba(211, 47, 47, 0.1));
+  color: var(--card-status-restricted-text, #d32f2f);
+}
+
+/* ============================================================
+   Resizer — clean vertical divider line (no grip icon)
+   ============================================================ */
+.resizer {
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 4px;
+  background: transparent;
+  cursor: col-resize;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0 1px;
+    background: transparent;
+    border-radius: 1px;
+    transition: background 0.2s ease;
+  }
+
+  &:hover::after {
+    background: var(--layout-border, #e5e5e5);
+  }
+}
+
+.resizer.isResizing::after {
+  background: var(--active);
+}

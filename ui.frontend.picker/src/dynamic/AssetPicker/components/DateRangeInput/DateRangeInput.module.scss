@@ -1,0 +1,35 @@
+.range {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color-muted, rgba(0, 0, 0, 0.55));
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--layout-border, #e8e8e8);
+  border-radius: 8px;
+  background: var(--input-placeholder-bg, var(--background, #fff));
+  color: var(--text-color, #111);
+  font-family: inherit;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--active, #1473e6);
+  }
+}

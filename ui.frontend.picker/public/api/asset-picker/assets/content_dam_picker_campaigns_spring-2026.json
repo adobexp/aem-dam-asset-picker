@@ -1,0 +1,34 @@
+{
+  "type": "directory",
+  "path": "/content/dam/picker/campaigns/spring-2026",
+  "name": "Spring 2026",
+  "isLeaf": true,
+  "childrenCount": 0,
+  "thumbnail": { "url": "/mocks/thumbs/folder.svg" },
+  "total": 1,
+  "displayed": 1,
+  "time": 9,
+  "items": [
+    {
+      "type": "asset",
+      "path": "/content/dam/picker/campaigns/spring-2026/hero-spring.jpg",
+      "name": "hero-spring.jpg",
+      "title": "Spring Hero",
+      "mime": "image/jpeg",
+      "size": "2.1 MB",
+      "url": "/content/dam/picker/campaigns/spring-2026/hero-spring.jpg",
+      "resolution": { "width": 3840, "height": 2160, "dpi": 240, "dimensions": "3840 x 2160" },
+      "thumbnail": { "url": "/mocks/thumbs/campaign-hero-spring.svg" },
+      "originalDownloadUrl": "/content/dam/picker/campaigns/spring-2026/hero-spring.jpg",
+      "renditionDownloadUrl": "/content/dam/picker/campaigns/spring-2026/hero-spring.jpg",
+      "downloadEnabled": false,
+      "shareEnabled": false,
+      "cartEnabled": false,
+      "metadata": [
+        { "label": "Asset type", "value": "Photography" },
+        { "label": "Campaign", "value": "Spring 2026" },
+        { "label": "Status", "value": "Approved" }
+      ]
+    }
+  ]
+}

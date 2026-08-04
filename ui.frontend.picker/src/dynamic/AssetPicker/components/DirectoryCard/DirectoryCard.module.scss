@@ -1,0 +1,104 @@
+@use "../../styles/breakpoints";
+@use "../../styles/mixins";
+
+.card {
+  position: relative;
+  display: block;
+
+  border: 1px solid var(--layout-border);
+  border-radius: var(--card-border-radius);
+  background: var(--directory-card-background, var(--card-background));
+
+  height: 240px;
+  overflow: hidden;
+
+  box-shadow: var(--main-box-shadow);
+  transition: border 0.2s ease;
+
+  &:hover {
+    border-color: var(--active);
+  }
+}
+
+.iconWrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+
+  height: 100%;
+  padding: 12px;
+
+  background: var(--directory-card-background, var(--card-icon-background));
+
+  &.withThumbnail {
+    background-image: var(--background);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+}
+
+.iconWrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: var(
+    --directory-card-overlay,
+    linear-gradient(to top, var(--hover-bar-background), transparent 60%)
+  );
+
+  opacity: 1;
+  pointer-events: none;
+}
+
+.icon {
+  color: var(--directory-card-icon-color, var(--card-icon-color));
+  z-index: 2;
+
+  .withThumbnail & {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+
+    border-radius: var(--button-radius);
+    border: 1px solid var(--layout-border);
+
+    background: var(--directory-card-thumbnail-icon-background, var(--hover-bar-background));
+    color: var(--directory-card-thumbnail-icon-color, var(--hover-bar-icon));
+  }
+}
+
+.nameWrapper {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+}
+
+.name {
+  @include mixins.clamp(2);
+
+  font-size: calc(var(--font-size) + 2px);
+  font-family: var(--font-family);
+  font-weight: 600;
+
+  color: var(--directory-card-name-color, var(--card-name-color));
+
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  margin-top: 4px;
+
+  font-size: var(--meta-font-size);
+  font-weight: 500;
+  color: var(--directory-card-count-color, var(--meta-value-color));
+}

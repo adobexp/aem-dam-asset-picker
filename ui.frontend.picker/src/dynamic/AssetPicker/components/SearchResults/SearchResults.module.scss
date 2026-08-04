@@ -1,0 +1,41 @@
+@use "../../styles/breakpoints";
+@use "../../styles/mixins";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.filterRow {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 24px;
+  gap: 20px;
+  justify-content: space-between;
+
+  @media (min-width: breakpoints.$tablet) {
+    flex-direction: column;
+  }
+}
+
+.empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.5;
+  font-size: 1.25rem;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.items {
+  flex-grow: 1;
+  min-width: calc(232px + 2 * 60px);
+}

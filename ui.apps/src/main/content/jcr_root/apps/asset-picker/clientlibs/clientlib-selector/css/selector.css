@@ -1,0 +1,41 @@
+/*
+ * The picker fills whatever the host gave it, whether that is an iframe, a modal or a popup
+ * window, so the mount has to stretch the full viewport height rather than grow with content.
+ */
+html,
+body.asset-picker-page {
+  height: 100%;
+  margin: 0;
+}
+
+body.asset-picker-page {
+  overflow: hidden;
+}
+
+body.asset-picker-page.asset-picker-selector-page {
+  overflow: hidden;
+  background: var(--content-background, #ffffff);
+}
+
+.asset-picker-selector {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100vh; /* fallback for older browsers */
+  max-height: 100dvh;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.asset-picker-selector > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  max-height: 100%;
+}
+
+/* Demo host may scroll; selector page must not. */
+body.asset-picker-page.asset-picker-demo-page {
+  overflow: auto;
+}

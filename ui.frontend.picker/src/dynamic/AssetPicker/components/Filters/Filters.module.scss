@@ -1,0 +1,167 @@
+@use "../../styles/breakpoints";
+@use "../../styles/mixins";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  background: var(--filters-background);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  animation: filtersBodyIn 380ms var(--motion-ease-out);
+
+  // padding: 8px 20px 16px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--layout-border);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--text-color-muted);
+    }
+  }
+}
+
+.search {
+  margin-bottom: 24px;
+
+  @media (min-width: breakpoints.$tablet) {
+    display: none;
+  }
+}
+
+.sort {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  @media (min-width: breakpoints.$tablet) {
+    display: none;
+  }
+}
+
+.form {
+  margin: 0;
+}
+
+.filters {
+  margin: 0;
+}
+
+/* ============================================================
+   Sticky footer (Clear / Apply)
+   ============================================================ */
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 8px;
+  border-top: 1px solid var(--filter-divider);
+  background: var(--filters-background);
+
+  @media (max-width: #{breakpoints.$tablet - 1}) {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+}
+
+
+.footerStatsSpacer {
+  flex: 1 1 auto;
+}
+
+
+.footerActions {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+
+.footerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  
+ transition:
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    transform 140ms var(--motion-ease-standard),
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+  
+&:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+
+  &:focus-visible {
+    outline: 2px solid var(--active);
+    outline-offset: 2px;
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    background-color: var(--button-disabled-bg);
+    color: var(--button-disabled-color);
+    border-color: var(--button-disabled-border);
+  }
+}
+
+
+.footerButton:disabled,
+.footerButton[aria-disabled="true"] {
+  transition: none;  /* immediate state change */
+}
+
+.footerButtonPrimary {
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-color);
+  border: 1px solid var(--button-primary-bg);
+
+  &:hover:not(:disabled) {
+    background-color: var(--button-primary-hover-bg);
+    border-color: var(--button-primary-hover-bg);
+  }
+}
+
+.footerButtonSecondary {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-color);
+  border: 1px solid var(--button-secondary-border);
+
+  &:hover:not(:disabled) {
+    background-color: var(--button-secondary-hover-bg);
+  }
+}

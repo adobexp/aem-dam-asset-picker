@@ -1,0 +1,109 @@
+/* ===== Default variant (back-compat) ===== */
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  color: var(--search-input-color);
+  border: solid 1px var(--search-input-border);
+  border-radius: 4px;
+  background: var(--search-input-background);
+}
+
+.input {
+  flex-shrink: 1;
+  flex-grow: 1;
+  border: 0;
+  padding: 2px 8px;
+  height: 36px;
+  min-width: 0;
+  border-radius: 4px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+
+  &::placeholder {
+    color: var(--search-input-placeholder);
+  }
+}
+
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  color: var(--search-submit-color);
+  background: var(--search-submit-background);
+  border: 0;
+  border-radius: 4px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  font-size: 18px;
+  font-weight: var(--search-submit-weight);
+
+  &:hover,
+  &:active {
+    background: var(--active);
+  }
+
+  &:focus-visible {
+    color: var(--search-submit-color);
+    background: var(--active);
+    outline: none;
+  }
+}
+
+/* ===== Pill variant ===== */
+.pill {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 8px 0 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-color: var(--input-placeholder-bg);
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--active);
+  }
+}
+
+.pillInput {
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-color);
+  padding: 0;
+
+  &::placeholder {
+    color: var(--input-placeholder-color);
+    opacity: 1;
+  }
+}
+
+.pillAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgba(0, 0, 0, 0.06);
+    outline: none;
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-sass-guidelines"],
+  "rules": {
+    "selector-class-pattern": null,
+    "max-nesting-depth": null,
+    "scss/at-import-partial-extension": null,
+    "scss/dollar-variable-pattern": null,
+    "scss/no-global-function-names": null,
+    "no-descending-specificity": null,
+    "declaration-property-value-no-unknown": null,
+    "alpha-value-notation": null,
+    "color-function-notation": null,
+    "shorthand-property-no-redundant-values": null,
+    "value-keyword-case": null,
+    "property-no-vendor-prefix": null,
+    "number-max-precision": null
+  },
+  "ignoreFiles": ["node_modules/**", "public/**", "client-libs/**"]
+}

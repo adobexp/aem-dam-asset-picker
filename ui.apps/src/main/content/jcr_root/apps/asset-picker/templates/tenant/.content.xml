@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+    jcr:primaryType="cq:Template"
+    jcr:title="Asset Picker : Tenant"
+    jcr:description="Tenant root under the Asset Picker site (e.g. /content/asset-picker/global). Only creatable directly under /content/asset-picker. Holds country pages and optional CA Config editors shared across the tenant."
+    allowedPaths="^/content/asset-picker$"
+    ranking="{Long}5">
+    <jcr:content
+        jcr:primaryType="cq:PageContent"
+        jcr:title="Tenant"
+        cq:allowedTemplates="[/apps/asset-picker/templates/country,/apps/asset-picker/templates/config-editor]"
+        sling:resourceType="asset-picker/components/page"/>
+</jcr:root>

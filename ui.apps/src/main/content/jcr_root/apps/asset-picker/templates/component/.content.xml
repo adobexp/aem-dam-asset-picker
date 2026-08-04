@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="cq:Template"
+    jcr:title="Asset Picker : Component"
+    jcr:description="Asset Selector page that mounts the picker SPA component (e.g. /content/asset-picker/global/us/en/selector). Host applications embed or open this page."
+    allowedPaths="^/content/asset-picker/[^/]+/[^/]+/[^/]+$"
+    ranking="{Long}40">
+    <jcr:content
+        jcr:primaryType="cq:PageContent"
+        jcr:title="Asset Selector"
+        bodyClass="asset-picker-selector-page"
+        clientlibs="[asset-picker.selector]"
+        sling:resourceType="asset-picker/components/page">
+        <selector
+            jcr:primaryType="nt:unstructured"
+            sling:resourceType="asset-picker/components/selector"
+            rootPath="[/content/dam]"
+            rootLabel="DAM"
+            selectionMode="multiple"
+            viewMode="browse"
+            theme="light"
+            targetOrigin="*"
+            searchPageSize="{Long}100"
+            showSearch="{Boolean}true"
+            showFuzzySearch="{Boolean}true"
+            showSemanticSearch="{Boolean}true"
+            collapsibleFilters="{Boolean}true"
+            displayDirectoryNames="{Boolean}true"/>
+    </jcr:content>
+</jcr:root>
