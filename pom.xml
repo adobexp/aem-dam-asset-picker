@@ -17,7 +17,7 @@
     <groupId>com.adobexp</groupId>
     <artifactId>aem-dam-asset-picker</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>2.0.1-SNAPSHOT</version>
     <name>AEM DAM Asset Picker</name>
     <description>React SPA Asset Picker for AEM with bespoke Sling APIs, a drop-in replacement for the OOTB AEM Asset Picker</description>
     <url>https://github.com/adobexp/aem-dam-asset-picker</url>
