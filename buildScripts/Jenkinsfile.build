@@ -499,8 +499,14 @@ PY
                         # Prefer HTTPS + PAT so Jenkins does not depend on SSH host aliases.
                         git remote set-url origin "https://x-access-token:\${GITHUB_TOKEN}@github.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}.git"
 
-                        # Stage every POM (root + modules)
-                        find . -name pom.xml -not -path './.git/*' -print0 | xargs -0 git add
+                        # Stage every project POM (root + modules). Exclude node_modules:
+                        # aem-clientlib-generator ships sample pom.xml files under
+                        # ui.frontend.picker/node_modules, and `git add` fails on ignored paths
+                        # (xargs exit 123) which otherwise marks a successful release as failed.
+                        find . -name pom.xml \
+                            -not -path './.git/*' \
+                            -not -path '*/node_modules/*' \
+                            -print0 | xargs -0 git add
 
                         if git diff --cached --quiet; then
                             echo "No POM version changes to commit."
