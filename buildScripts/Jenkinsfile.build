@@ -29,19 +29,21 @@
 //    - NEXT_DEV_VERSION must end with "-SNAPSHOT" when RELEASE_BUILD=true
 //
 //  Required Jenkins credentials:
-//    - github-sharadtech-token     : GitHub PAT with repo + contents:write
-//    - adobexp-central-portal      : Username/password (Sonatype Central Portal token)
-//                                   → Maven settings.xml server id "central"
-//    - adobexp-gpg-passphrase      : GPG passphrase for key MAVEN_GPG_KEYNAME
+//    - github-sharadtech-token   : GitHub PAT with repo + contents:write
+//    - CentralMavenCredentials   : Username/password (Sonatype Central Portal token)
+//                                  → injected as Maven settings.xml server id "central"
 //
-//  Jenkins: https://anyjenkins.com
+//  Required Jenkins Config File (Manage Jenkins → Managed files):
+//    - CentralMavenGlobalSettings (id d1dc66d8-955b-4f5b-b2bf-f30503ecef8b)
+//      Nexus mirror (parent POM resolution) + GPG passphrase profile
+//
 //  Required plugins: Pipeline Utility Steps, Credentials Binding, Config File Provider,
 //                    Git, Pipeline Maven / Maven Integration
 //  Required Jenkins tools (auto-install ok):
 //    - JDK-17
 //    - MAVEN-3.9.11
 //  Agent requirements for RELEASE_BUILD=true:
-//    - GPG secret key MAVEN_GPG_KEYNAME available to the Jenkins user
+//    - GPG secret key 33C0330C91FCC3C1 available to the Jenkins user
 // =============================================================================
 
 pipeline {
@@ -80,10 +82,9 @@ pipeline {
         GITHUB_OWNER                 = 'adobexp'
         GITHUB_REPO                  = 'aem-dam-asset-picker'
         GITHUB_TOKEN_CREDENTIALS_ID  = 'github-sharadtech-token'
-        CENTRAL_CREDENTIALS_ID       = 'adobexp-central-portal'
-        GPG_PASSPHRASE_CREDENTIALS_ID = 'adobexp-gpg-passphrase'
+        CENTRAL_CREDENTIALS_ID       = 'CentralMavenCredentials'
         GPG_KEYNAME                  = '33C0330C91FCC3C1'
-        // Managed file: CentralMavenGlobalSettings (Nexus mirror + deploy server)
+        // Managed file: CentralMavenGlobalSettings (Nexus mirror + GPG passphrase)
         MAVEN_GLOBAL_SETTINGS_ID     = 'd1dc66d8-955b-4f5b-b2bf-f30503ecef8b'
 
         PACKAGE_NAME_PREFIX          = 'aem-dam-asset-picker.all'
@@ -228,20 +229,16 @@ pipeline {
                             credentialsId: env.CENTRAL_CREDENTIALS_ID,
                             usernameVariable: 'CENTRAL_USER',
                             passwordVariable: 'CENTRAL_TOKEN'
-                        ),
-                        string(
-                            credentialsId: env.GPG_PASSPHRASE_CREDENTIALS_ID,
-                            variable: 'GPG_PASSPHRASE'
                         )
                     ]) {
                         sh '''
                             set -eu
                             CENTRAL_USER="$(printf '%s' "${CENTRAL_USER}" | sed 's/[[:space:]]*$//')"
                             CENTRAL_TOKEN="$(printf '%s' "${CENTRAL_TOKEN}" | sed 's/[[:space:]]*$//')"
-                            GPG_PASSPHRASE="$(printf '%s' "${GPG_PASSPHRASE}" | sed 's/[[:space:]]*$//')"
 
-                            # Keep Nexus mirror/servers from CentralMavenGlobalSettings and inject
-                            # Sonatype Central Portal server id "central" for publishing.
+                            # Keep Nexus mirror + GPG passphrase profile from
+                            # CentralMavenGlobalSettings; inject Sonatype Central
+                            # Portal server id "central" for publishing.
                             SETTINGS_FILE="${WORKSPACE}/.jenkins-central-settings.xml"
                             export SETTINGS_FILE
                             python3 - <<'PY'
@@ -281,10 +278,10 @@ print(f"Merged Maven settings with central server -> {out}")
 PY
 
                             echo "==== mvn clean deploy → Maven Central (com.adobexp) ${RELEASE_VERSION} ===="
+                            # gpg.passphrase comes from CentralMavenGlobalSettings (active profile)
                             mvn clean deploy ${MVN_DEPLOY_OPTS} \
                               -s "${SETTINGS_FILE}" \
-                              -Dgpg.keyname="${GPG_KEYNAME}" \
-                              -Dgpg.passphrase="${GPG_PASSPHRASE}"
+                              -Dgpg.keyname="${GPG_KEYNAME}"
 
                             test -f "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
                             ls -la "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
