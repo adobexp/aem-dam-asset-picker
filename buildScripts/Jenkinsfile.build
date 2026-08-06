@@ -7,25 +7,40 @@
 //    3. Build current SNAPSHOT from POM (reactor → all container package)
 //    4. If RELEASE_BUILD == false → finish SUCCESS
 //    5. Strip "-SNAPSHOT" → release version in all POM files
-//    6. Build release package
+//    6. Build, GPG-sign and `mvn deploy` release artifacts to Maven Central
+//         (groupId com.adobexp; via central-publishing-maven-plugin)
 //    7. Publish release zip to GitHub Releases
 //         https://github.com/adobexp/aem-dam-asset-picker/releases
 //    8. Set all POM versions to NEXT_DEV_VERSION
 //    9. Build again with NEXT_DEV_VERSION
 //   10. Commit POM version bump to main and finish SUCCESS
 //
-//  Release artifact:
+//  Release artifact (GitHub + AEM deploy job):
 //    all/target/aem-dam-asset-picker.all-<version>.zip
-//    (embeds ui.apps, ui.config, ui.content)
+//
+//  Maven Central artifacts (groupId com.adobexp):
+//    aem-dam-asset-picker (pom)
+//    aem-dam-asset-picker.core (jar + sources + javadoc)
+//    aem-dam-asset-picker.ui.apps.structure / ui.apps / ui.config / ui.content / all
+//    (ui.frontend.picker is skipped — intermediate clientlib build only)
 //
 //  Prerequisites:
 //    - Root (and module) POM versions must end with "-SNAPSHOT" before a release run
 //    - NEXT_DEV_VERSION must end with "-SNAPSHOT" when RELEASE_BUILD=true
 //
+//  Required Jenkins credentials:
+//    - github-sharadtech-token     : GitHub PAT with repo + contents:write
+//    - adobexp-central-portal      : Username/password (Sonatype Central Portal token)
+//                                   → Maven settings.xml server id "central"
+//    - adobexp-gpg-passphrase      : GPG passphrase for key MAVEN_GPG_KEYNAME
+//
+//  Jenkins: https://anyjenkins.com
 //  Required plugins: Pipeline Utility Steps, Credentials Binding, Git, Pipeline Maven / Maven Integration
 //  Required Jenkins tools (auto-install ok):
 //    - JDK-17
 //    - MAVEN-3.9.11
+//  Agent requirements for RELEASE_BUILD=true:
+//    - GPG secret key MAVEN_GPG_KEYNAME available to the Jenkins user
 // =============================================================================
 
 pipeline {
@@ -41,7 +56,7 @@ pipeline {
         booleanParam(
             name: 'RELEASE_BUILD',
             defaultValue: false,
-            description: 'If true, strip SNAPSHOT, build/publish a GitHub release, then bump POMs to NEXT_DEV_VERSION.'
+            description: 'If true, strip SNAPSHOT, deploy to Maven Central, publish a GitHub release, then bump POMs to NEXT_DEV_VERSION.'
         )
         string(
             name: 'NEXT_DEV_VERSION',
@@ -53,7 +68,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
         disableConcurrentBuilds()
-        timeout(time: 60, unit: 'MINUTES')
+        timeout(time: 90, unit: 'MINUTES')
     }
 
     environment {
@@ -64,12 +79,17 @@ pipeline {
         GITHUB_OWNER                 = 'adobexp'
         GITHUB_REPO                  = 'aem-dam-asset-picker'
         GITHUB_TOKEN_CREDENTIALS_ID  = 'github-sharadtech-token'
+        CENTRAL_CREDENTIALS_ID       = 'adobexp-central-portal'
+        GPG_PASSPHRASE_CREDENTIALS_ID = 'adobexp-gpg-passphrase'
+        GPG_KEYNAME                  = '33C0330C91FCC3C1'
 
         PACKAGE_NAME_PREFIX          = 'aem-dam-asset-picker.all'
         RELEASE_ZIP_DIR              = 'all/target'
 
         MAVEN_OPTS                   = '-Xmx2048m'
+        // SNAPSHOT / verification builds skip GPG (signing only for Central deploy).
         MVN_BUILD_OPTS               = '-B -DskipTests -Dgpg.skip=true'
+        MVN_DEPLOY_OPTS              = '-B -DskipTests'
     }
 
     stages {
@@ -184,18 +204,58 @@ pipeline {
             }
         }
 
-        stage('Create Release Build') {
+        stage('Deploy Maven Central') {
             when {
                 expression { return params.RELEASE_BUILD }
             }
             steps {
-                sh '''
-                    set -eu
-                    mvn clean package ${MVN_BUILD_OPTS}
-                    test -f "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
-                    ls -la "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
-                    cp "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}" "${WORKSPACE}/${RELEASE_ZIP}"
-                '''
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: env.CENTRAL_CREDENTIALS_ID,
+                        usernameVariable: 'CENTRAL_USER',
+                        passwordVariable: 'CENTRAL_TOKEN'
+                    ),
+                    string(
+                        credentialsId: env.GPG_PASSPHRASE_CREDENTIALS_ID,
+                        variable: 'GPG_PASSPHRASE'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+                        CENTRAL_USER="$(printf '%s' "${CENTRAL_USER}" | sed 's/[[:space:]]*$//')"
+                        CENTRAL_TOKEN="$(printf '%s' "${CENTRAL_TOKEN}" | sed 's/[[:space:]]*$//')"
+                        GPG_PASSPHRASE="$(printf '%s' "${GPG_PASSPHRASE}" | sed 's/[[:space:]]*$//')"
+
+                        # Temporary settings.xml with Sonatype Central Portal server id "central"
+                        # (publishingServerId from central-maven-parent).
+                        SETTINGS_FILE="${WORKSPACE}/.jenkins-central-settings.xml"
+                        cat > "${SETTINGS_FILE}" <<EOF
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <servers>
+    <server>
+      <id>central</id>
+      <username>${CENTRAL_USER}</username>
+      <password>${CENTRAL_TOKEN}</password>
+    </server>
+  </servers>
+</settings>
+EOF
+
+                        echo "==== mvn clean deploy → Maven Central (com.adobexp) ${RELEASE_VERSION} ===="
+                        mvn clean deploy ${MVN_DEPLOY_OPTS} \
+                          -s "${SETTINGS_FILE}" \
+                          -Dgpg.keyname="${GPG_KEYNAME}" \
+                          -Dgpg.passphrase="${GPG_PASSPHRASE}"
+
+                        test -f "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
+                        ls -la "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
+                        cp "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}" "${WORKSPACE}/${RELEASE_ZIP}"
+
+                        rm -f "${SETTINGS_FILE}"
+                    '''
+                }
 
                 archiveArtifacts artifacts: "${env.RELEASE_ZIP}",
                                  fingerprint: true,
@@ -289,8 +349,9 @@ create_payload = {
     "tag_name": tag,
     "name": version,
     "body": (
-        "aem-dam-asset-picker {0} — AEM DAM Asset Picker container package "
-        "(ui.apps, ui.config, ui.content)."
+        "aem-dam-asset-picker {0} — AEM DAM Asset Picker\\n\\n"
+        "- GitHub asset: aem-dam-asset-picker.all-{0}.zip\\n"
+        "- Maven Central: com.adobexp:aem-dam-asset-picker*:{0}"
     ).format(version),
     "draft": False,
     "prerelease": False,
@@ -416,11 +477,12 @@ PY
                         echo '==============================================================='
                         echo ' Release job completed successfully.'
                         echo "   Released version : ${env.RELEASE_VERSION}"
+                        echo "   Maven Central    : https://central.sonatype.com/search?q=g:com.adobexp+AND+a:aem-dam-asset-picker"
                         echo "   GitHub release   : https://github.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/releases/tag/${env.GIT_TAG}"
                         echo "   Artifact         : ${env.RELEASE_ZIP}"
                         echo "   Next dev version : ${params.NEXT_DEV_VERSION}"
                         echo '==============================================================='
-                        currentBuild.description = "Released ${env.RELEASE_VERSION} → ${params.NEXT_DEV_VERSION}"
+                        currentBuild.description = "Released ${env.RELEASE_VERSION} → Central + GitHub → ${params.NEXT_DEV_VERSION}"
                     } else {
                         echo '==============================================================='
                         echo ' SNAPSHOT build completed successfully (RELEASE_BUILD=false).'
@@ -436,7 +498,7 @@ PY
         success {
             script {
                 if (params.RELEASE_BUILD) {
-                    echo "SUCCESS: Published ${env.GITHUB_REPO}@${env.RELEASE_VERSION} to GitHub Releases"
+                    echo "SUCCESS: Published ${env.GITHUB_REPO}@${env.RELEASE_VERSION} to Maven Central + GitHub Releases"
                 } else {
                     echo "SUCCESS: SNAPSHOT build ${env.SNAPSHOT_VERSION}"
                 }
@@ -444,6 +506,9 @@ PY
         }
         failure {
             echo "FAILURE: Job failed at stage '${env.STAGE_NAME}'."
+        }
+        always {
+            sh 'rm -f "${WORKSPACE}/.jenkins-central-settings.xml" || true'
         }
     }
 }

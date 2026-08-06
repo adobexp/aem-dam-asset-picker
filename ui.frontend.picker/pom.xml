@@ -14,6 +14,17 @@
     <name>AEM DAM Asset Picker - UI Frontend (Picker SPA)</name>
     <description>React SPA for the Asset Picker, packaged as AEM clientlibs</description>
 
+    <!--
+        Intermediate build module only — clientlibs are embedded into ui.apps.
+        Do not publish this artifact to Maven Central / Nexus.
+    -->
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <gpg.skip>true</gpg.skip>
+        <maven.source.skip>true</maven.source.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
     <build>
         <!-- The jar artifact is the generated clientlib tree, consumed by ui.apps -->
         <outputDirectory>./client-libs</outputDirectory>

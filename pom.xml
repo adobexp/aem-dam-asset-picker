@@ -2,12 +2,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Inherits GPG signing, maven-source / maven-javadoc attachment, and
+        Sonatype central-publishing-maven-plugin from the AdobeXP parent used by
+        aem-infralytiqs-integrator / aem-loki-integrator.
+    -->
+    <parent>
+        <groupId>com.adobexp</groupId>
+        <artifactId>central-maven-parent</artifactId>
+        <version>1.0.3</version>
+    </parent>
+
     <groupId>com.adobexp</groupId>
     <artifactId>aem-dam-asset-picker</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
     <name>AEM DAM Asset Picker</name>
     <description>React SPA Asset Picker for AEM with bespoke Sling APIs, a drop-in replacement for the OOTB AEM Asset Picker</description>
+    <url>https://github.com/adobexp/aem-dam-asset-picker</url>
 
     <modules>
         <module>core</module>
@@ -18,6 +31,13 @@
         <module>ui.content</module>
         <module>all</module>
     </modules>
+
+    <scm>
+        <url>https://github.com/adobexp/aem-dam-asset-picker</url>
+        <connection>scm:git:git@github.com:adobexp/aem-dam-asset-picker.git</connection>
+        <developerConnection>scm:git:git@github.com:adobexp/aem-dam-asset-picker.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <aem.host>localhost</aem.host>
@@ -43,6 +63,26 @@
         <npmVersion>10.8.2</npmVersion>
 
         <componentGroupName>AEM DAM Asset Picker</componentGroupName>
+
+        <!-- Maven Central / GPG (same key + server id as other AdobeXP releases) -->
+        <keyname>33C0330C91FCC3C1</keyname>
+        <server>central</server>
+        <maven-release-plugin>3.0.1</maven-release-plugin>
+        <maven-scm-plugin>2.0.1</maven-scm-plugin>
+        <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
+        <!--
+            Flatten published POMs so Maven Central validation does not need to
+            resolve central-maven-parent (same approach as aem-infralytiqs-integrator).
+        -->
+        <flatten.skip>false</flatten.skip>
+        <!--
+            Override central-publishing-maven-plugin 0.7.0 from parent: Sonatype's
+            DeploymentApiResponse now includes a "warnings" field that 0.7.0 cannot
+            deserialize. 0.8.0+ accepts it.
+        -->
+        <central.publishing.plugin.version>0.8.0</central.publishing.plugin.version>
+        <!-- Content packages often have no Java sources; do not fail the release. -->
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
     </properties>
 
     <repositories>
@@ -107,6 +147,65 @@
                     <release>${java.version}</release>
                 </configuration>
             </plugin>
+            <!--
+                Flatten is not present on central-maven-parent 1.0.3; declare it here so
+                published POMs are self-contained for Maven Central validation.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>${flatten-maven-plugin.version}</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>ossrh</flattenMode>
+                    <skip>${flatten.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven-release-plugin}</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <goals>deploy</goals>
+                    <arguments>-DperformRelease=true -Dgpg.keyname=${keyname}</arguments>
+                    <pushChanges>true</pushChanges>
+                    <localCheckout>false</localCheckout>
+                    <scmCommentPrefix>[maven-release-plugin] </scmCommentPrefix>
+                    <checkModificationExcludes>
+                        <checkModificationExclude>${project.build.directory}</checkModificationExclude>
+                        <checkModificationExclude>**/target</checkModificationExclude>
+                    </checkModificationExcludes>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-api</artifactId>
+                        <version>${maven-scm-plugin}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>${maven-scm-plugin}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -145,6 +244,29 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>${central.publishing.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <configuration>
+                        <keyname>${keyname}</keyname>
+                        <gpgArguments>
+                            <arg>--pinentry-mode</arg>
+                            <arg>loopback</arg>
+                        </gpgArguments>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <failOnError>${maven.javadoc.failOnError}</failOnError>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
