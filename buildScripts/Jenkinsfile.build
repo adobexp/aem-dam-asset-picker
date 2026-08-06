@@ -35,7 +35,8 @@
 //    - adobexp-gpg-passphrase      : GPG passphrase for key MAVEN_GPG_KEYNAME
 //
 //  Jenkins: https://anyjenkins.com
-//  Required plugins: Pipeline Utility Steps, Credentials Binding, Git, Pipeline Maven / Maven Integration
+//  Required plugins: Pipeline Utility Steps, Credentials Binding, Config File Provider,
+//                    Git, Pipeline Maven / Maven Integration
 //  Required Jenkins tools (auto-install ok):
 //    - JDK-17
 //    - MAVEN-3.9.11
@@ -82,6 +83,8 @@ pipeline {
         CENTRAL_CREDENTIALS_ID       = 'adobexp-central-portal'
         GPG_PASSPHRASE_CREDENTIALS_ID = 'adobexp-gpg-passphrase'
         GPG_KEYNAME                  = '33C0330C91FCC3C1'
+        // Managed file: CentralMavenGlobalSettings (Nexus mirror + deploy server)
+        MAVEN_GLOBAL_SETTINGS_ID     = 'd1dc66d8-955b-4f5b-b2bf-f30503ecef8b'
 
         PACKAGE_NAME_PREFIX          = 'aem-dam-asset-picker.all'
         RELEASE_ZIP_DIR              = 'all/target'
@@ -137,12 +140,16 @@ pipeline {
                     currentBuild.displayName = "#${env.BUILD_NUMBER} • ${snapshotVersion}"
                 }
 
-                sh '''
-                    set -eu
-                    mvn -version
-                    mvn clean package ${MVN_BUILD_OPTS}
-                    ls -la "${RELEASE_ZIP_DIR}/${PACKAGE_NAME_PREFIX}-${SNAPSHOT_VERSION}.zip"
-                '''
+                configFileProvider([
+                    configFile(fileId: env.MAVEN_GLOBAL_SETTINGS_ID, variable: 'MAVEN_SETTINGS')
+                ]) {
+                    sh '''
+                        set -eu
+                        mvn -version
+                        mvn -s "${MAVEN_SETTINGS}" clean package ${MVN_BUILD_OPTS}
+                        ls -la "${RELEASE_ZIP_DIR}/${PACKAGE_NAME_PREFIX}-${SNAPSHOT_VERSION}.zip"
+                    '''
+                }
             }
         }
 
@@ -185,15 +192,19 @@ pipeline {
                     echo "Setting all POM versions to RELEASE: ${releaseVersion}"
                 }
 
-                sh '''
-                    set -eu
-                    mvn versions:set \
-                        -DnewVersion="${RELEASE_VERSION}" \
-                        -DprocessAllModules=true \
-                        -DgenerateBackupPoms=false \
-                        -B
-                    mvn versions:commit -B || true
-                '''
+                configFileProvider([
+                    configFile(fileId: env.MAVEN_GLOBAL_SETTINGS_ID, variable: 'MAVEN_SETTINGS')
+                ]) {
+                    sh '''
+                        set -eu
+                        mvn -s "${MAVEN_SETTINGS}" versions:set \
+                            -DnewVersion="${RELEASE_VERSION}" \
+                            -DprocessAllModules=true \
+                            -DgenerateBackupPoms=false \
+                            -B
+                        mvn -s "${MAVEN_SETTINGS}" versions:commit -B || true
+                    '''
+                }
 
                 script {
                     def pomVersion = readMavenPom(file: 'pom.xml').version
@@ -209,52 +220,79 @@ pipeline {
                 expression { return params.RELEASE_BUILD }
             }
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: env.CENTRAL_CREDENTIALS_ID,
-                        usernameVariable: 'CENTRAL_USER',
-                        passwordVariable: 'CENTRAL_TOKEN'
-                    ),
-                    string(
-                        credentialsId: env.GPG_PASSPHRASE_CREDENTIALS_ID,
-                        variable: 'GPG_PASSPHRASE'
-                    )
+                configFileProvider([
+                    configFile(fileId: env.MAVEN_GLOBAL_SETTINGS_ID, variable: 'MAVEN_SETTINGS')
                 ]) {
-                    sh '''
-                        set -eu
-                        CENTRAL_USER="$(printf '%s' "${CENTRAL_USER}" | sed 's/[[:space:]]*$//')"
-                        CENTRAL_TOKEN="$(printf '%s' "${CENTRAL_TOKEN}" | sed 's/[[:space:]]*$//')"
-                        GPG_PASSPHRASE="$(printf '%s' "${GPG_PASSPHRASE}" | sed 's/[[:space:]]*$//')"
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: env.CENTRAL_CREDENTIALS_ID,
+                            usernameVariable: 'CENTRAL_USER',
+                            passwordVariable: 'CENTRAL_TOKEN'
+                        ),
+                        string(
+                            credentialsId: env.GPG_PASSPHRASE_CREDENTIALS_ID,
+                            variable: 'GPG_PASSPHRASE'
+                        )
+                    ]) {
+                        sh '''
+                            set -eu
+                            CENTRAL_USER="$(printf '%s' "${CENTRAL_USER}" | sed 's/[[:space:]]*$//')"
+                            CENTRAL_TOKEN="$(printf '%s' "${CENTRAL_TOKEN}" | sed 's/[[:space:]]*$//')"
+                            GPG_PASSPHRASE="$(printf '%s' "${GPG_PASSPHRASE}" | sed 's/[[:space:]]*$//')"
 
-                        # Temporary settings.xml with Sonatype Central Portal server id "central"
-                        # (publishingServerId from central-maven-parent).
-                        SETTINGS_FILE="${WORKSPACE}/.jenkins-central-settings.xml"
-                        cat > "${SETTINGS_FILE}" <<EOF
-<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
-  <servers>
-    <server>
-      <id>central</id>
-      <username>${CENTRAL_USER}</username>
-      <password>${CENTRAL_TOKEN}</password>
-    </server>
-  </servers>
-</settings>
-EOF
+                            # Keep Nexus mirror/servers from CentralMavenGlobalSettings and inject
+                            # Sonatype Central Portal server id "central" for publishing.
+                            SETTINGS_FILE="${WORKSPACE}/.jenkins-central-settings.xml"
+                            export SETTINGS_FILE
+                            python3 - <<'PY'
+import os
+import xml.etree.ElementTree as ET
 
-                        echo "==== mvn clean deploy → Maven Central (com.adobexp) ${RELEASE_VERSION} ===="
-                        mvn clean deploy ${MVN_DEPLOY_OPTS} \
-                          -s "${SETTINGS_FILE}" \
-                          -Dgpg.keyname="${GPG_KEYNAME}" \
-                          -Dgpg.passphrase="${GPG_PASSPHRASE}"
+ns = "http://maven.apache.org/SETTINGS/1.0.0"
+ET.register_namespace("", ns)
 
-                        test -f "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
-                        ls -la "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
-                        cp "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}" "${WORKSPACE}/${RELEASE_ZIP}"
+src = os.environ["MAVEN_SETTINGS"]
+out = os.environ["SETTINGS_FILE"]
+user = os.environ["CENTRAL_USER"]
+token = os.environ["CENTRAL_TOKEN"]
 
-                        rm -f "${SETTINGS_FILE}"
-                    '''
+tree = ET.parse(src)
+root = tree.getroot()
+
+def q(tag):
+    return f"{{{ns}}}{tag}"
+
+servers = root.find(q("servers"))
+if servers is None:
+    servers = ET.SubElement(root, q("servers"))
+
+for server in list(servers.findall(q("server"))):
+    sid = server.find(q("id"))
+    if sid is not None and (sid.text or "").strip() == "central":
+        servers.remove(server)
+
+server = ET.SubElement(servers, q("server"))
+ET.SubElement(server, q("id")).text = "central"
+ET.SubElement(server, q("username")).text = user
+ET.SubElement(server, q("password")).text = token
+
+tree.write(out, encoding="UTF-8", xml_declaration=True)
+print(f"Merged Maven settings with central server -> {out}")
+PY
+
+                            echo "==== mvn clean deploy → Maven Central (com.adobexp) ${RELEASE_VERSION} ===="
+                            mvn clean deploy ${MVN_DEPLOY_OPTS} \
+                              -s "${SETTINGS_FILE}" \
+                              -Dgpg.keyname="${GPG_KEYNAME}" \
+                              -Dgpg.passphrase="${GPG_PASSPHRASE}"
+
+                            test -f "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
+                            ls -la "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
+                            cp "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}" "${WORKSPACE}/${RELEASE_ZIP}"
+
+                            rm -f "${SETTINGS_FILE}"
+                        '''
+                    }
                 }
 
                 archiveArtifacts artifacts: "${env.RELEASE_ZIP}",
@@ -409,15 +447,19 @@ PY
                 script {
                     echo "Setting all POM versions to NEXT_DEV_VERSION: ${params.NEXT_DEV_VERSION}"
                 }
-                sh """
-                    set -eu
-                    mvn versions:set \\
-                        -DnewVersion="${params.NEXT_DEV_VERSION}" \\
-                        -DprocessAllModules=true \\
-                        -DgenerateBackupPoms=false \\
-                        -B
-                    mvn versions:commit -B || true
-                """
+                configFileProvider([
+                    configFile(fileId: env.MAVEN_GLOBAL_SETTINGS_ID, variable: 'MAVEN_SETTINGS')
+                ]) {
+                    sh """
+                        set -eu
+                        mvn -s "\${MAVEN_SETTINGS}" versions:set \\
+                            -DnewVersion="${params.NEXT_DEV_VERSION}" \\
+                            -DprocessAllModules=true \\
+                            -DgenerateBackupPoms=false \\
+                            -B
+                        mvn -s "\${MAVEN_SETTINGS}" versions:commit -B || true
+                    """
+                }
                 script {
                     def pomVersion = readMavenPom(file: 'pom.xml').version
                     if (pomVersion != params.NEXT_DEV_VERSION) {
@@ -432,11 +474,15 @@ PY
                 expression { return params.RELEASE_BUILD }
             }
             steps {
-                sh '''
-                    set -eu
-                    mvn clean package ${MVN_BUILD_OPTS}
-                    ls -la "${RELEASE_ZIP_DIR}/${PACKAGE_NAME_PREFIX}"-*.zip || true
-                '''
+                configFileProvider([
+                    configFile(fileId: env.MAVEN_GLOBAL_SETTINGS_ID, variable: 'MAVEN_SETTINGS')
+                ]) {
+                    sh '''
+                        set -eu
+                        mvn -s "${MAVEN_SETTINGS}" clean package ${MVN_BUILD_OPTS}
+                        ls -la "${RELEASE_ZIP_DIR}/${PACKAGE_NAME_PREFIX}"-*.zip || true
+                    '''
+                }
             }
         }
 
