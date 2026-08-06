@@ -6,7 +6,7 @@
 //    2. Checkout main
 //    3. Build current SNAPSHOT from POM (reactor → all container package)
 //    4. If RELEASE_BUILD == false → finish SUCCESS
-//    5. Strip "-SNAPSHOT" → release version in all POM files
+//    5. Set all POM versions to RELEASE_VERSION (param, or POM version minus -SNAPSHOT)
 //    6. Build, GPG-sign and `mvn deploy` release artifacts to Maven Central
 //         (groupId com.adobexp; via central-publishing-maven-plugin)
 //    7. Publish release zip to GitHub Releases
@@ -26,6 +26,7 @@
 //
 //  Prerequisites:
 //    - Root (and module) POM versions must end with "-SNAPSHOT" before a release run
+//    - RELEASE_VERSION must NOT end with "-SNAPSHOT" when set (blank → derive from POM)
 //    - NEXT_DEV_VERSION must end with "-SNAPSHOT" when RELEASE_BUILD=true
 //
 //  Required Jenkins credentials:
@@ -59,11 +60,16 @@ pipeline {
         booleanParam(
             name: 'RELEASE_BUILD',
             defaultValue: false,
-            description: 'If true, strip SNAPSHOT, deploy to Maven Central, publish a GitHub release, then bump POMs to NEXT_DEV_VERSION.'
+            description: 'If true, set RELEASE_VERSION, deploy to Maven Central, publish a GitHub release, then bump POMs to NEXT_DEV_VERSION.'
+        )
+        string(
+            name: 'RELEASE_VERSION',
+            defaultValue: '',
+            description: 'Release version written to all POM files for Central + GitHub (e.g. 1.0.1). Leave blank to derive from the current POM by stripping "-SNAPSHOT". Must NOT end with "-SNAPSHOT". Required semantics apply only when RELEASE_BUILD=true.'
         )
         string(
             name: 'NEXT_DEV_VERSION',
-            defaultValue: '1.0.1-SNAPSHOT',
+            defaultValue: '1.0.2-SNAPSHOT',
             description: 'Next development version written to all POM files AFTER the release. Must end with "-SNAPSHOT". Required when RELEASE_BUILD=true.'
         )
     }
@@ -184,7 +190,24 @@ pipeline {
                         error "Expected project POM version to end with '-SNAPSHOT' but found '${snapshotVersion}'."
                     }
 
-                    def releaseVersion = snapshotVersion.replace('-SNAPSHOT', '')
+                    def releaseVersion = params.RELEASE_VERSION?.trim()
+                    if (releaseVersion) {
+                        if (releaseVersion.endsWith('-SNAPSHOT')) {
+                            error "RELEASE_VERSION '${releaseVersion}' must NOT end with '-SNAPSHOT'."
+                        }
+                        if (!(releaseVersion ==~ /^[0-9]+(\.[0-9]+)*([.-][A-Za-z0-9]+)*$/)) {
+                            error "RELEASE_VERSION '${releaseVersion}' is not a valid Maven version (expected e.g. 1.0.1)."
+                        }
+                        echo "Using RELEASE_VERSION parameter: ${releaseVersion}"
+                    } else {
+                        releaseVersion = snapshotVersion.replace('-SNAPSHOT', '')
+                        echo "RELEASE_VERSION parameter blank — derived from POM: ${releaseVersion}"
+                    }
+
+                    if (releaseVersion == params.NEXT_DEV_VERSION.replace('-SNAPSHOT', '')) {
+                        error "RELEASE_VERSION '${releaseVersion}' must differ from NEXT_DEV_VERSION '${params.NEXT_DEV_VERSION}' (without -SNAPSHOT)."
+                    }
+
                     env.RELEASE_VERSION = releaseVersion
                     env.GIT_TAG = "v${releaseVersion}"
                     env.RELEASE_ZIP = "${env.PACKAGE_NAME_PREFIX}-${releaseVersion}.zip"
