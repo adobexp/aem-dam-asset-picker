@@ -1,0 +1,449 @@
+// =============================================================================
+//  aem-dam-asset-picker — BUILD & RELEASE Jenkinsfile
+// -----------------------------------------------------------------------------
+//  Flow:
+//    1. Clean workspace
+//    2. Checkout main
+//    3. Build current SNAPSHOT from POM (reactor → all container package)
+//    4. If RELEASE_BUILD == false → finish SUCCESS
+//    5. Strip "-SNAPSHOT" → release version in all POM files
+//    6. Build release package
+//    7. Publish release zip to GitHub Releases
+//         https://github.com/adobexp/aem-dam-asset-picker/releases
+//    8. Set all POM versions to NEXT_DEV_VERSION
+//    9. Build again with NEXT_DEV_VERSION
+//   10. Commit POM version bump to main and finish SUCCESS
+//
+//  Release artifact:
+//    all/target/aem-dam-asset-picker.all-<version>.zip
+//    (embeds ui.apps, ui.config, ui.content)
+//
+//  Prerequisites:
+//    - Root (and module) POM versions must end with "-SNAPSHOT" before a release run
+//    - NEXT_DEV_VERSION must end with "-SNAPSHOT" when RELEASE_BUILD=true
+//
+//  Required plugins: Pipeline Utility Steps, Credentials Binding, Git, Pipeline Maven / Maven Integration
+//  Required Jenkins tools (auto-install ok):
+//    - JDK-17
+//    - MAVEN-3.9.11
+// =============================================================================
+
+pipeline {
+    agent any
+
+    // Global Jenkins tools (Manage Jenkins → Tools)
+    tools {
+        jdk 'JDK-17'
+        maven 'MAVEN-3.9.11'
+    }
+
+    parameters {
+        booleanParam(
+            name: 'RELEASE_BUILD',
+            defaultValue: false,
+            description: 'If true, strip SNAPSHOT, build/publish a GitHub release, then bump POMs to NEXT_DEV_VERSION.'
+        )
+        string(
+            name: 'NEXT_DEV_VERSION',
+            defaultValue: '1.0.1-SNAPSHOT',
+            description: 'Next development version written to all POM files AFTER the release. Must end with "-SNAPSHOT". Required when RELEASE_BUILD=true.'
+        )
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timeout(time: 60, unit: 'MINUTES')
+    }
+
+    environment {
+        GIT_BRANCH                   = 'main'
+        GIT_USER_NAME                = 'AdobeXP CI'
+        GIT_USER_EMAIL               = 'admin@adobexp.com'
+
+        GITHUB_OWNER                 = 'adobexp'
+        GITHUB_REPO                  = 'aem-dam-asset-picker'
+        GITHUB_TOKEN_CREDENTIALS_ID  = 'github-sharadtech-token'
+
+        PACKAGE_NAME_PREFIX          = 'aem-dam-asset-picker.all'
+        RELEASE_ZIP_DIR              = 'all/target'
+
+        MAVEN_OPTS                   = '-Xmx2048m'
+        MVN_BUILD_OPTS               = '-B -DskipTests -Dgpg.skip=true'
+    }
+
+    stages {
+
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Checkout main') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${env.GIT_BRANCH}"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'CleanBeforeCheckout'],
+                        [$class: 'LocalBranch', localBranch: env.GIT_BRANCH]
+                    ],
+                    userRemoteConfigs: scm.userRemoteConfigs
+                ])
+                sh '''
+                    set -eu
+                    git checkout "${GIT_BRANCH}"
+                    git fetch origin "${GIT_BRANCH}"
+                    git reset --hard "origin/${GIT_BRANCH}"
+                    git --no-pager log -1 --oneline
+                    git status -sb
+                '''
+            }
+        }
+
+        stage('Build SNAPSHOT') {
+            steps {
+                script {
+                    def snapshotVersion = readMavenPom(file: 'pom.xml').version
+                    env.SNAPSHOT_VERSION = snapshotVersion
+                    echo "Building SNAPSHOT version: ${snapshotVersion}"
+
+                    if (!snapshotVersion?.endsWith('-SNAPSHOT')) {
+                        error "Expected project POM version to end with '-SNAPSHOT' but found '${snapshotVersion}'."
+                    }
+
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} • ${snapshotVersion}"
+                }
+
+                sh '''
+                    set -eu
+                    mvn -version
+                    mvn clean package ${MVN_BUILD_OPTS}
+                    ls -la "${RELEASE_ZIP_DIR}/${PACKAGE_NAME_PREFIX}-${SNAPSHOT_VERSION}.zip"
+                '''
+            }
+        }
+
+        stage('Release gate') {
+            when {
+                expression { return !params.RELEASE_BUILD }
+            }
+            steps {
+                echo "RELEASE_BUILD=false — SNAPSHOT build succeeded. Skipping release stages."
+                script {
+                    currentBuild.description = "SNAPSHOT ${env.SNAPSHOT_VERSION} (no release)"
+                }
+            }
+        }
+
+        stage('Set Release Version') {
+            when {
+                expression { return params.RELEASE_BUILD }
+            }
+            steps {
+                script {
+                    if (!params.NEXT_DEV_VERSION?.trim()) {
+                        error 'NEXT_DEV_VERSION is required when RELEASE_BUILD=true.'
+                    }
+                    if (!params.NEXT_DEV_VERSION.endsWith('-SNAPSHOT')) {
+                        error "NEXT_DEV_VERSION '${params.NEXT_DEV_VERSION}' must end with '-SNAPSHOT'."
+                    }
+
+                    def snapshotVersion = readMavenPom(file: 'pom.xml').version
+                    if (!snapshotVersion?.endsWith('-SNAPSHOT')) {
+                        error "Expected project POM version to end with '-SNAPSHOT' but found '${snapshotVersion}'."
+                    }
+
+                    def releaseVersion = snapshotVersion.replace('-SNAPSHOT', '')
+                    env.RELEASE_VERSION = releaseVersion
+                    env.GIT_TAG = "v${releaseVersion}"
+                    env.RELEASE_ZIP = "${env.PACKAGE_NAME_PREFIX}-${releaseVersion}.zip"
+
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} • release ${releaseVersion}"
+                    echo "Setting all POM versions to RELEASE: ${releaseVersion}"
+                }
+
+                sh '''
+                    set -eu
+                    mvn versions:set \
+                        -DnewVersion="${RELEASE_VERSION}" \
+                        -DprocessAllModules=true \
+                        -DgenerateBackupPoms=false \
+                        -B
+                    mvn versions:commit -B || true
+                '''
+
+                script {
+                    def pomVersion = readMavenPom(file: 'pom.xml').version
+                    if (pomVersion != env.RELEASE_VERSION) {
+                        error "POM version '${pomVersion}' does not match RELEASE_VERSION '${env.RELEASE_VERSION}'."
+                    }
+                }
+            }
+        }
+
+        stage('Create Release Build') {
+            when {
+                expression { return params.RELEASE_BUILD }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    mvn clean package ${MVN_BUILD_OPTS}
+                    test -f "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
+                    ls -la "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}"
+                    cp "${RELEASE_ZIP_DIR}/${RELEASE_ZIP}" "${WORKSPACE}/${RELEASE_ZIP}"
+                '''
+
+                archiveArtifacts artifacts: "${env.RELEASE_ZIP}",
+                                 fingerprint: true,
+                                 onlyIfSuccessful: true
+            }
+        }
+
+        stage('Publish GitHub Release') {
+            when {
+                expression { return params.RELEASE_BUILD }
+            }
+            steps {
+                withCredentials([string(credentialsId: env.GITHUB_TOKEN_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        set -eu
+                        GITHUB_TOKEN="$(printf '%s' "${GITHUB_TOKEN}" | sed 's/[[:space:]]*$//')"
+                        export GITHUB_TOKEN
+
+                        python3 - <<'PY'
+import json
+import os
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+owner = os.environ["GITHUB_OWNER"]
+repo = os.environ["GITHUB_REPO"]
+token = os.environ["GITHUB_TOKEN"]
+tag = os.environ["GIT_TAG"]
+version = os.environ["RELEASE_VERSION"]
+asset_path = os.environ["RELEASE_ZIP"]
+
+api = f"https://api.github.com/repos/{owner}/{repo}"
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "jenkins-aem-dam-asset-picker-build",
+    "Content-Type": "application/json",
+}
+
+def request(method, url, data=None, extra_headers=None):
+    body = None
+    req_headers = dict(headers)
+    if extra_headers:
+        req_headers.update(extra_headers)
+    if data is not None:
+        body = json.dumps(data).encode("utf-8")
+    elif method in ("POST", "PUT", "PATCH") and "Content-Type" in req_headers:
+        del req_headers["Content-Type"]
+    req = urllib.request.Request(url, data=body, headers=req_headers, method=method)
+    try:
+        with urllib.request.urlopen(req) as resp:
+            raw = resp.read().decode("utf-8")
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8", errors="replace")
+        try:
+            payload = json.loads(raw) if raw else {}
+        except json.JSONDecodeError:
+            payload = {"message": raw}
+        payload["http_status"] = exc.code
+        return payload
+
+def asset_upload_url(release_obj, filename):
+    template = release_obj.get("upload_url", "")
+    if template:
+        base = template.split("{", 1)[0]
+        return f"{base}?name={urllib.parse.quote(filename)}"
+    release_id = release_obj["id"]
+    return (
+        f"https://uploads.github.com/repos/{owner}/{repo}/releases/"
+        f"{release_id}/assets?name={urllib.parse.quote(filename)}"
+    )
+
+def delete_existing_asset(release_obj, asset_name):
+    for existing in release_obj.get("assets", []):
+        if existing.get("name") == asset_name:
+            asset_id = existing["id"]
+            print(f"Removing existing release asset {asset_name} (id={asset_id}) ...")
+            result = request("DELETE", f"{api}/releases/assets/{asset_id}", data=None)
+            if result.get("http_status") and result["http_status"] >= 400:
+                print(f"Warning: could not delete existing asset {asset_name}: {result}")
+
+if not os.path.isfile(asset_path):
+    print(f"Missing release asset: {asset_path}", file=sys.stderr)
+    sys.exit(1)
+
+print(f"Creating or locating GitHub release {tag} ...")
+create_payload = {
+    "tag_name": tag,
+    "name": version,
+    "body": (
+        "aem-dam-asset-picker {0} — AEM DAM Asset Picker container package "
+        "(ui.apps, ui.config, ui.content)."
+    ).format(version),
+    "draft": False,
+    "prerelease": False,
+    "generate_release_notes": True,
+}
+release = request("POST", f"{api}/releases", create_payload)
+
+if "id" not in release:
+    print(f"Create release response: {json.dumps(release, indent=2)}")
+    print(f"Trying to fetch existing release by tag {tag} ...")
+    release = request("GET", f"{api}/releases/tags/{tag}", data=None)
+
+if "id" not in release:
+    print("Failed to create or locate GitHub release.", file=sys.stderr)
+    print(json.dumps(release, indent=2), file=sys.stderr)
+    sys.exit(1)
+
+release_id = release["id"]
+print(f"Using GitHub release id={release_id} tag={tag}")
+
+name = os.path.basename(asset_path)
+delete_existing_asset(release, name)
+print(f"Uploading {asset_path} as {name} ...")
+with open(asset_path, "rb") as fh:
+    file_data = fh.read()
+upload_headers = {
+    "Authorization": f"Bearer {token}",
+    "Accept": "application/vnd.github+json",
+    "Content-Type": "application/octet-stream",
+    "User-Agent": "jenkins-aem-dam-asset-picker-build",
+}
+upload_url = asset_upload_url(release, name)
+req = urllib.request.Request(upload_url, data=file_data, headers=upload_headers, method="POST")
+try:
+    with urllib.request.urlopen(req) as resp:
+        result = json.loads(resp.read().decode("utf-8"))
+        print(f"Uploaded {result.get('name', name)} ({result.get('size', len(file_data))} bytes)")
+except urllib.error.HTTPError as exc:
+    print(f"Asset upload failed for {name}: HTTP {exc.code}", file=sys.stderr)
+    print(exc.read().decode("utf-8", errors="replace"), file=sys.stderr)
+    sys.exit(1)
+
+print(f"GitHub release published: https://github.com/{owner}/{repo}/releases/tag/{tag}")
+PY
+                    '''
+                }
+            }
+        }
+
+        stage('Set NEXT_DEV_VERSION') {
+            when {
+                expression { return params.RELEASE_BUILD }
+            }
+            steps {
+                script {
+                    echo "Setting all POM versions to NEXT_DEV_VERSION: ${params.NEXT_DEV_VERSION}"
+                }
+                sh """
+                    set -eu
+                    mvn versions:set \\
+                        -DnewVersion="${params.NEXT_DEV_VERSION}" \\
+                        -DprocessAllModules=true \\
+                        -DgenerateBackupPoms=false \\
+                        -B
+                    mvn versions:commit -B || true
+                """
+                script {
+                    def pomVersion = readMavenPom(file: 'pom.xml').version
+                    if (pomVersion != params.NEXT_DEV_VERSION) {
+                        error "POM version '${pomVersion}' does not match NEXT_DEV_VERSION '${params.NEXT_DEV_VERSION}'."
+                    }
+                }
+            }
+        }
+
+        stage('Build NEXT_DEV_VERSION') {
+            when {
+                expression { return params.RELEASE_BUILD }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    mvn clean package ${MVN_BUILD_OPTS}
+                    ls -la "${RELEASE_ZIP_DIR}/${PACKAGE_NAME_PREFIX}"-*.zip || true
+                '''
+            }
+        }
+
+        stage('Commit NEXT_DEV_VERSION') {
+            when {
+                expression { return params.RELEASE_BUILD }
+            }
+            steps {
+                withCredentials([string(credentialsId: env.GITHUB_TOKEN_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
+                    sh """
+                        set -eu
+                        GITHUB_TOKEN="\$(printf '%s' "\${GITHUB_TOKEN}" | sed 's/[[:space:]]*\$//')"
+
+                        git config user.name  "${env.GIT_USER_NAME}"
+                        git config user.email "${env.GIT_USER_EMAIL}"
+
+                        # Prefer HTTPS + PAT so Jenkins does not depend on SSH host aliases.
+                        git remote set-url origin "https://x-access-token:\${GITHUB_TOKEN}@github.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}.git"
+
+                        # Stage every POM (root + modules)
+                        find . -name pom.xml -not -path './.git/*' -print0 | xargs -0 git add
+
+                        if git diff --cached --quiet; then
+                            echo "No POM version changes to commit."
+                        else
+                            git commit -m "ci: bump version to ${params.NEXT_DEV_VERSION} [skip ci]"
+                            git push origin "HEAD:${env.GIT_BRANCH}"
+                        fi
+                    """
+                }
+            }
+        }
+
+        stage('Finish') {
+            steps {
+                script {
+                    if (params.RELEASE_BUILD) {
+                        echo '==============================================================='
+                        echo ' Release job completed successfully.'
+                        echo "   Released version : ${env.RELEASE_VERSION}"
+                        echo "   GitHub release   : https://github.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/releases/tag/${env.GIT_TAG}"
+                        echo "   Artifact         : ${env.RELEASE_ZIP}"
+                        echo "   Next dev version : ${params.NEXT_DEV_VERSION}"
+                        echo '==============================================================='
+                        currentBuild.description = "Released ${env.RELEASE_VERSION} → ${params.NEXT_DEV_VERSION}"
+                    } else {
+                        echo '==============================================================='
+                        echo ' SNAPSHOT build completed successfully (RELEASE_BUILD=false).'
+                        echo "   SNAPSHOT version : ${env.SNAPSHOT_VERSION}"
+                        echo '==============================================================='
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                if (params.RELEASE_BUILD) {
+                    echo "SUCCESS: Published ${env.GITHUB_REPO}@${env.RELEASE_VERSION} to GitHub Releases"
+                } else {
+                    echo "SUCCESS: SNAPSHOT build ${env.SNAPSHOT_VERSION}"
+                }
+            }
+        }
+        failure {
+            echo "FAILURE: Job failed at stage '${env.STAGE_NAME}'."
+        }
+    }
+}

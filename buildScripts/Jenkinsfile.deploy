@@ -1,0 +1,528 @@
+// =============================================================================
+//  aem-dam-asset-picker — DEPLOY Jenkinsfile
+// -----------------------------------------------------------------------------
+//  Flow:
+//    1. Clean workspace / validate parameters
+//    2. Resolve VERSION (LATEST = newest GitHub release that has the all zip;
+//       otherwise deploy the given semver, e.g. 1.0.0)
+//    3. Download aem-dam-asset-picker.all-<version>.zip from GitHub Releases
+//         https://github.com/adobexp/aem-dam-asset-picker/releases
+//    4. Wait for AEM Package Manager readiness on each target
+//    5. Upload + install the package on AEM Author and/or AEM Publish
+//    6. Optional Varnish cache ban
+//    7. Smoke-check Asset Picker pages on Author / Publish
+//
+//  Prerequisite: run Jenkinsfile.build with RELEASE_BUILD=true so the release
+//  zip is published to GitHub Releases before deploying.
+// =============================================================================
+
+pipeline {
+    agent any
+
+    parameters {
+        string(
+            name: 'VERSION',
+            defaultValue: 'LATEST',
+            description: 'LATEST = newest GitHub release that has aem-dam-asset-picker.all-<version>.zip. Or set a specific version (e.g. 1.0.0).'
+        )
+        booleanParam(
+            name: 'DEPLOY_AUTHOR',
+            defaultValue: true,
+            description: 'Upload + install the container package on AEM Author.'
+        )
+        booleanParam(
+            name: 'DEPLOY_PUBLISH',
+            defaultValue: true,
+            description: 'Upload + install the container package on AEM Publish.'
+        )
+        booleanParam(
+            name: 'CLEAR_VARNISH',
+            defaultValue: true,
+            description: 'After a successful Publish deploy, ban all URLs on the Varnish cache host (10.1.1.27).'
+        )
+        string(
+            name: 'AEM_AUTHOR_URL',
+            defaultValue: 'http://10.1.1.202:5502',
+            description: 'AEM Author base URL (no trailing slash).'
+        )
+        string(
+            name: 'AEM_PUBLISH_URL',
+            defaultValue: 'http://10.1.1.29:5503',
+            description: 'AEM Publish base URL (no trailing slash).'
+        )
+        string(
+            name: 'VARNISH_HOST',
+            defaultValue: '10.1.1.27',
+            description: 'Varnish host used when CLEAR_VARNISH=true (SSH as root, key-based).'
+        )
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    environment {
+        GITHUB_OWNER                 = 'adobexp'
+        GITHUB_REPO                  = 'aem-dam-asset-picker'
+        GITHUB_TOKEN_CREDENTIALS_ID  = 'github-sharadtech-token'
+        AEM_CREDENTIALS_ID           = 'adobexp-aem-admin'
+
+        PACKAGE_GROUP                = 'com.adobexp'
+        ARTIFACT_DIR                 = 'release-artifacts'
+        PACKAGE_NAME_PREFIX          = 'aem-dam-asset-picker.all'
+
+        // Smoke-check paths (default Global / US / EN demo pages)
+        SMOKE_AUTHOR_PATH            = '/content/asset-picker/global/us/en/picker.html?wcmmode=disabled'
+        SMOKE_PUBLISH_PATH           = '/content/asset-picker/global/us/en/picker.html'
+    }
+
+    stages {
+
+        stage('Init') {
+            steps {
+                deleteDir()
+                script {
+                    if (!params.DEPLOY_AUTHOR && !params.DEPLOY_PUBLISH) {
+                        error 'Select at least one of DEPLOY_AUTHOR or DEPLOY_PUBLISH.'
+                    }
+                    def targets = []
+                    if (params.DEPLOY_AUTHOR)  targets << "Author(${params.AEM_AUTHOR_URL})"
+                    if (params.DEPLOY_PUBLISH) targets << "Publish(${params.AEM_PUBLISH_URL})"
+                    env.DEPLOY_TARGETS = targets.join(' + ')
+                    echo "Deploy targets: ${env.DEPLOY_TARGETS}"
+                }
+            }
+        }
+
+        stage('Resolve Version') {
+            steps {
+                script {
+                    def versionInput = params.VERSION?.trim()
+                    def version
+
+                    if (!versionInput || versionInput.equalsIgnoreCase('LATEST')) {
+                        echo 'VERSION is LATEST — resolving newest GitHub release with all-package zip ...'
+                        withCredentials([string(credentialsId: env.GITHUB_TOKEN_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
+                            version = sh(
+                                script: '''
+                                    set -eu
+                                    GITHUB_TOKEN="$(printf '%s' "${GITHUB_TOKEN}" | sed 's/[[:space:]]*$//')"
+                                    export GITHUB_TOKEN
+                                    python3 - <<'PY'
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+
+owner = os.environ["GITHUB_OWNER"]
+repo = os.environ["GITHUB_REPO"]
+prefix = os.environ["PACKAGE_NAME_PREFIX"]
+token = os.environ["GITHUB_TOKEN"]
+api = f"https://api.github.com/repos/{owner}/{repo}"
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "jenkins-aem-dam-asset-picker-deploy",
+}
+
+def get_json(url):
+    req = urllib.request.Request(url, headers=headers, method="GET")
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+def tag_to_version(tag_name):
+    return tag_name[1:] if tag_name.startswith("v") else tag_name
+
+def has_content_zip(release, version):
+    expected = f"{prefix}-{version}.zip"
+    for asset in release.get("assets") or []:
+        if asset.get("name") == expected:
+            return True
+    return False
+
+def pick(release):
+    tag = release.get("tag_name") or ""
+    if release.get("draft") or not tag:
+        return None
+    version = tag_to_version(tag)
+    if has_content_zip(release, version):
+        return version
+    return None
+
+try:
+    latest = get_json(f"{api}/releases/latest")
+    version = pick(latest)
+    if version:
+        print(version)
+        sys.exit(0)
+except urllib.error.HTTPError:
+    pass
+
+releases = get_json(f"{api}/releases?per_page=30")
+for release in releases:
+    version = pick(release)
+    if version:
+        print(version)
+        sys.exit(0)
+
+sys.exit(
+    "No GitHub release found with asset "
+    f"{prefix}-<version>.zip. Run Jenkinsfile.build with RELEASE_BUILD=true first."
+)
+PY
+                                ''',
+                                returnStdout: true
+                            ).trim()
+                        }
+                        echo "Resolved latest GitHub release version: ${version}"
+                    } else {
+                        version = versionInput
+                        if (!(version ==~ /^\d+\.\d+\.\d+([-.][0-9A-Za-z.-]+)?$/)) {
+                            error "VERSION '${version}' is not valid. Use LATEST or a semver such as 1.0.0."
+                        }
+                        echo "Using specific VERSION from job parameter: ${version}"
+                    }
+
+                    env.DEPLOY_VERSION = version
+                    env.GIT_TAG        = "v${version}"
+                    env.PACKAGE_ZIP    = "${env.PACKAGE_NAME_PREFIX}-${version}.zip"
+                    env.PACKAGE_PATH   = "/etc/packages/${env.PACKAGE_GROUP}/${env.PACKAGE_ZIP}"
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} • ${version} → ${env.DEPLOY_TARGETS}"
+                }
+            }
+        }
+
+        stage('Download GitHub Release') {
+            steps {
+                withCredentials([string(credentialsId: env.GITHUB_TOKEN_CREDENTIALS_ID, variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        set -eu
+                        GITHUB_TOKEN="$(printf '%s' "${GITHUB_TOKEN}" | sed 's/[[:space:]]*$//')"
+                        export GITHUB_TOKEN
+
+                        API="https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}"
+                        mkdir -p "${ARTIFACT_DIR}"
+
+                        echo "Fetching GitHub release ${GIT_TAG} ..."
+                        RELEASE_JSON=$(curl -sS \
+                            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                            -H "Accept: application/vnd.github+json" \
+                            -H "User-Agent: jenkins-aem-dam-asset-picker-deploy" \
+                            "${API}/releases/tags/${GIT_TAG}")
+                        export RELEASE_JSON
+
+                        python3 - <<'PY'
+import json
+import os
+import sys
+import urllib.request
+
+release = json.loads(os.environ["RELEASE_JSON"])
+if "assets" not in release:
+    print(json.dumps(release, indent=2), file=sys.stderr)
+    sys.exit(
+        "GitHub release not found or has no assets. "
+        "Was Jenkinsfile.build run with RELEASE_BUILD=true for this version?"
+    )
+
+wanted = os.environ["PACKAGE_ZIP"]
+assets = {a["name"]: a for a in release.get("assets") or []}
+if wanted not in assets:
+    available = ", ".join(sorted(assets)) or "(none)"
+    sys.exit(f"Missing asset {wanted} on release {os.environ['GIT_TAG']}. Available: {available}")
+
+asset = assets[wanted]
+# Prefer the authenticated API asset URL (works for private repos).
+url = asset.get("url") or asset.get("browser_download_url")
+token = os.environ["GITHUB_TOKEN"]
+out_path = os.path.join(os.environ["ARTIFACT_DIR"], wanted)
+
+req = urllib.request.Request(url, headers={
+    "Authorization": f"Bearer {token}",
+    "Accept": "application/octet-stream",
+    "User-Agent": "jenkins-aem-dam-asset-picker-deploy",
+})
+with urllib.request.urlopen(req) as resp, open(out_path, "wb") as fh:
+    fh.write(resp.read())
+
+size = os.path.getsize(out_path)
+if size < 1024:
+    sys.exit(f"Downloaded asset looks too small ({size} bytes): {out_path}")
+print(f"Downloaded {wanted} ({size} bytes)")
+print(f"Release: {release.get('html_url', '')}")
+PY
+
+                        ls -la "${ARTIFACT_DIR}/${PACKAGE_ZIP}"
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Author') {
+            when {
+                expression { return params.DEPLOY_AUTHOR }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: env.AEM_CREDENTIALS_ID,
+                    usernameVariable: 'AEM_USER',
+                    passwordVariable: 'AEM_PASS'
+                )]) {
+                    sh '''
+                        set -eu
+                        AEM_BASE_URL="${AEM_AUTHOR_URL}"
+                        AEM_LABEL="Author"
+                        ZIP_PATH="${ARTIFACT_DIR}/${PACKAGE_ZIP}"
+                        echo "==== Deploy ${AEM_LABEL} -> ${AEM_BASE_URL} (${PACKAGE_ZIP}) ===="
+
+                        for i in $(seq 1 18); do
+                          code=$(curl -s -o /dev/null -w '%{http_code}' \
+                            -u "${AEM_USER}:${AEM_PASS}" --connect-timeout 5 \
+                            "${AEM_BASE_URL}/crx/packmgr/service.jsp" || echo 000)
+                          echo "  packmgr poll ${i}: ${code}"
+                          if [ "${code}" = "200" ]; then
+                            break
+                          fi
+                          if [ "${i}" -eq 18 ]; then
+                            echo "ERROR: Package Manager not ready on ${AEM_BASE_URL}" >&2
+                            exit 1
+                          fi
+                          sleep 5
+                        done
+
+                        upload=$(curl -s -u "${AEM_USER}:${AEM_PASS}" \
+                          -F "package=@${ZIP_PATH}" -F "force=true" \
+                          "${AEM_BASE_URL}/crx/packmgr/service/.json?cmd=upload")
+                        echo "  upload: ${upload}"
+                        echo "${upload}" | grep -q '"success":true' || {
+                          echo "ERROR: package upload failed" >&2
+                          exit 1
+                        }
+
+                        # Parse packmgr JSON via stdin (avoids fragile python -c quoting on Jenkins).
+                        path=$(UPLOAD_JSON="${upload}" DEFAULT_PATH="${PACKAGE_PATH}" python3 - <<'PY'
+import json
+import os
+
+raw = os.environ.get("UPLOAD_JSON", "")
+default = os.environ.get("DEFAULT_PATH", "")
+try:
+    path = json.loads(raw).get("path") or ""
+except Exception:
+    path = ""
+print(path or default)
+PY
+)
+                        echo "  package path: ${path}"
+
+                        sleep 2
+                        ok=0
+                        for i in $(seq 1 10); do
+                          install=$(curl -s -u "${AEM_USER}:${AEM_PASS}" -X POST \
+                            "${AEM_BASE_URL}/crx/packmgr/service/.json${path}?cmd=install" || true)
+                          echo "  install attempt ${i}: $(printf '%s' "${install}" | head -c 240)"
+                          if printf '%s' "${install}" | grep -q '"success":true'; then
+                            ok=1
+                            break
+                          fi
+                          sleep 8
+                        done
+                        if [ "${ok}" != "1" ]; then
+                          echo "ERROR: package install failed on ${AEM_LABEL}" >&2
+                          exit 1
+                        fi
+                        echo "==== ${AEM_LABEL} deploy OK ===="
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Publish') {
+            when {
+                expression { return params.DEPLOY_PUBLISH }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: env.AEM_CREDENTIALS_ID,
+                    usernameVariable: 'AEM_USER',
+                    passwordVariable: 'AEM_PASS'
+                )]) {
+                    sh '''
+                        set -eu
+                        AEM_BASE_URL="${AEM_PUBLISH_URL}"
+                        AEM_LABEL="Publish"
+                        ZIP_PATH="${ARTIFACT_DIR}/${PACKAGE_ZIP}"
+                        echo "==== Deploy ${AEM_LABEL} -> ${AEM_BASE_URL} (${PACKAGE_ZIP}) ===="
+
+                        for i in $(seq 1 18); do
+                          code=$(curl -s -o /dev/null -w '%{http_code}' \
+                            -u "${AEM_USER}:${AEM_PASS}" --connect-timeout 5 \
+                            "${AEM_BASE_URL}/crx/packmgr/service.jsp" || echo 000)
+                          echo "  packmgr poll ${i}: ${code}"
+                          if [ "${code}" = "200" ]; then
+                            break
+                          fi
+                          if [ "${i}" -eq 18 ]; then
+                            echo "ERROR: Package Manager not ready on ${AEM_BASE_URL}" >&2
+                            exit 1
+                          fi
+                          sleep 5
+                        done
+
+                        upload=$(curl -s -u "${AEM_USER}:${AEM_PASS}" \
+                          -F "package=@${ZIP_PATH}" -F "force=true" \
+                          "${AEM_BASE_URL}/crx/packmgr/service/.json?cmd=upload")
+                        echo "  upload: ${upload}"
+                        echo "${upload}" | grep -q '"success":true' || {
+                          echo "ERROR: package upload failed" >&2
+                          exit 1
+                        }
+
+                        path=$(UPLOAD_JSON="${upload}" DEFAULT_PATH="${PACKAGE_PATH}" python3 - <<'PY'
+import json
+import os
+
+raw = os.environ.get("UPLOAD_JSON", "")
+default = os.environ.get("DEFAULT_PATH", "")
+try:
+    path = json.loads(raw).get("path") or ""
+except Exception:
+    path = ""
+print(path or default)
+PY
+)
+                        echo "  package path: ${path}"
+
+                        sleep 2
+                        ok=0
+                        for i in $(seq 1 10); do
+                          install=$(curl -s -u "${AEM_USER}:${AEM_PASS}" -X POST \
+                            "${AEM_BASE_URL}/crx/packmgr/service/.json${path}?cmd=install" || true)
+                          echo "  install attempt ${i}: $(printf '%s' "${install}" | head -c 240)"
+                          if printf '%s' "${install}" | grep -q '"success":true'; then
+                            ok=1
+                            break
+                          fi
+                          sleep 8
+                        done
+                        if [ "${ok}" != "1" ]; then
+                          echo "ERROR: package install failed on ${AEM_LABEL}" >&2
+                          exit 1
+                        fi
+                        echo "==== ${AEM_LABEL} deploy OK ===="
+                    '''
+                }
+            }
+        }
+
+        stage('Clear Varnish Cache') {
+            when {
+                allOf {
+                    expression { return params.CLEAR_VARNISH }
+                    expression { return params.DEPLOY_PUBLISH }
+                }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    echo "==== Ban Varnish cache on ${VARNISH_HOST} ===="
+                    ssh -o BatchMode=yes \
+                        -o StrictHostKeyChecking=accept-new \
+                        -o ConnectTimeout=15 \
+                        "root@${VARNISH_HOST}" \
+                      'varnishadm ban "req.url ~ ."; varnishadm ban.list | head -5'
+                '''
+            }
+        }
+
+        stage('Smoke Checks') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: env.AEM_CREDENTIALS_ID,
+                    usernameVariable: 'AEM_USER',
+                    passwordVariable: 'AEM_PASS'
+                )]) {
+                    sh '''
+                        set -eu
+                        export DEPLOY_AUTHOR_FLAG="${DEPLOY_AUTHOR}"
+                        export DEPLOY_PUBLISH_FLAG="${DEPLOY_PUBLISH}"
+                        python3 - <<'PY'
+import base64
+import os
+import sys
+import urllib.error
+import urllib.request
+
+def get(url, user=None, password=None):
+    req = urllib.request.Request(url)
+    if user and password:
+        token = base64.b64encode(f"{user}:{password}".encode()).decode()
+        req.add_header("Authorization", f"Basic {token}")
+    with urllib.request.urlopen(req, timeout=45) as resp:
+        return resp.getcode(), resp.read().decode("utf-8", "replace")
+
+user = os.environ["AEM_USER"]
+password = os.environ["AEM_PASS"]
+author_path = os.environ.get("SMOKE_AUTHOR_PATH", "/content/asset-picker/global/us/en/picker.html?wcmmode=disabled")
+publish_path = os.environ.get("SMOKE_PUBLISH_PATH", "/content/asset-picker/global/us/en/picker.html")
+failed = False
+
+if os.environ.get("DEPLOY_AUTHOR_FLAG", "true").lower() == "true":
+    author = os.environ["AEM_AUTHOR_URL"].rstrip("/")
+    url = f"{author}{author_path}"
+    try:
+        code, html = get(url, user, password)
+        body = html.lower()
+        ok = code == 200 and ("asset-picker" in body or "assetpicker" in body or "clientlib-selector" in body)
+        print(f"Author picker: status={code} ok={ok} url={url}")
+        if not ok:
+            failed = True
+    except Exception as exc:
+        print(f"Author picker: FAILED ({exc})", file=sys.stderr)
+        failed = True
+
+if os.environ.get("DEPLOY_PUBLISH_FLAG", "true").lower() == "true":
+    publish = os.environ["AEM_PUBLISH_URL"].rstrip("/")
+    url = f"{publish}{publish_path}"
+    try:
+        code, html = get(url, user, password)
+        body = html.lower()
+        ok = code == 200 and ("asset-picker" in body or "assetpicker" in body or "clientlib-selector" in body)
+        print(f"Publish picker: status={code} ok={ok} url={url}")
+        if not ok:
+            failed = True
+    except Exception as exc:
+        print(f"Publish picker: FAILED ({exc})", file=sys.stderr)
+        failed = True
+
+if failed:
+    sys.exit(1)
+print("Smoke checks passed.")
+PY
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                echo '==============================================================='
+                echo ' Deploy completed successfully.'
+                echo "   Version   : ${env.DEPLOY_VERSION}"
+                echo "   Artifact  : ${env.PACKAGE_ZIP}"
+                echo "   GitHub    : https://github.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/releases/tag/${env.GIT_TAG}"
+                echo "   Targets   : ${env.DEPLOY_TARGETS}"
+                echo '==============================================================='
+                currentBuild.description = "Deployed ${env.DEPLOY_VERSION} → ${env.DEPLOY_TARGETS}"
+            }
+        }
+        failure {
+            echo "FAILURE: Deploy job failed at stage '${env.STAGE_NAME}'."
+        }
+    }
+}
