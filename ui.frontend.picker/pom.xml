@@ -23,12 +23,22 @@
         <gpg.skip>true</gpg.skip>
         <maven.source.skip>true</maven.source.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <!-- central-publishing-maven-plugin still stages artifacts unless skipped -->
+        <skipPublishing>true</skipPublishing>
+        <central.publish.skip>true</central.publish.skip>
     </properties>
 
     <build>
         <!-- The jar artifact is the generated clientlib tree, consumed by ui.apps -->
         <outputDirectory>./client-libs</outputDirectory>
         <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <configuration>
+                    <skipPublishing>true</skipPublishing>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
