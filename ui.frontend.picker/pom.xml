@@ -17,15 +17,19 @@
     <!--
         Intermediate build module only — clientlibs are embedded into ui.apps.
         Do not publish this artifact to Maven Central / Nexus.
+
+        Note: central-publishing-maven-plugin 0.8.0 still STAGES artifacts into the
+        shared central-staging bundle when skipPublishing=true (it only skips the
+        HTTP upload for that module). The final reactor module then uploads the
+        whole bundle — including this unsigned jar — and Central rejects it.
+        Unbind the publish goal entirely so this module is never staged.
     -->
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <gpg.skip>true</gpg.skip>
         <maven.source.skip>true</maven.source.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <!-- central-publishing-maven-plugin still stages artifacts unless skipped -->
         <skipPublishing>true</skipPublishing>
-        <central.publish.skip>true</central.publish.skip>
     </properties>
 
     <build>
@@ -35,6 +39,17 @@
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
+                <executions>
+                    <!-- Jenkins/reactor uses publish-to-central; extensions inject injected-central-publishing -->
+                    <execution>
+                        <id>publish-to-central</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>injected-central-publishing</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
                 <configuration>
                     <skipPublishing>true</skipPublishing>
                 </configuration>
