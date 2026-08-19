@@ -17,7 +17,7 @@ type FilterCommon = {
   expanded: boolean;
   name: string;
   dependsOn?: string;
-  categoryValues?: {};
+  categoryValues?: Record<string, FilterValue[]>;
   searchable?: boolean;
   placeholder?: string;
   multiSelect?: boolean;

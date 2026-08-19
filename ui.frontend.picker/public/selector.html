@@ -54,6 +54,57 @@
         ],
         "filters": [
           {
+            "id": "jcr:content/metadata/adobexp:studio-agency",
+            "name": "Studio/Agency",
+            "type": "select",
+            "expanded": true,
+            "value": null,
+            "values": [
+              { "id": "agency-a", "name": "Agency A" },
+              { "id": "agency-b", "name": "Agency B" }
+            ]
+          },
+          {
+            "id": "jcr:content/metadata/adobexp:client-name",
+            "name": "Client Name",
+            "type": "select",
+            "expanded": true,
+            "value": null,
+            "dependsOn": "jcr:content/metadata/adobexp:studio-agency",
+            "categoryValues": {
+              "agency-a": [
+                { "id": "client-x", "name": "Client X" },
+                { "id": "client-y", "name": "Client Y" }
+              ],
+              "agency-b": [
+                { "id": "client-z", "name": "Client Z" }
+              ]
+            },
+            "values": [
+              { "id": "client-x", "name": "Client X" },
+              { "id": "client-y", "name": "Client Y" },
+              { "id": "client-z", "name": "Client Z" }
+            ]
+          },
+          {
+            "id": "jcr:content/metadata/adobexp:brand",
+            "name": "Brand",
+            "type": "select",
+            "expanded": true,
+            "value": null,
+            "dependsOn": "jcr:content/metadata/adobexp:client-name",
+            "categoryValues": {
+              "client-x": [{ "id": "brand-one", "name": "Brand One" }],
+              "client-y": [{ "id": "brand-two", "name": "Brand Two" }],
+              "client-z": [{ "id": "brand-three", "name": "Brand Three" }]
+            },
+            "values": [
+              { "id": "brand-one", "name": "Brand One" },
+              { "id": "brand-two", "name": "Brand Two" },
+              { "id": "brand-three", "name": "Brand Three" }
+            ]
+          },
+          {
             "id": "jcr:content/metadata/dam:assetType",
             "name": "Asset type",
             "type": "checkbox",
@@ -68,17 +119,6 @@
               { "id": "Banner", "name": "Banner" },
               { "id": "Video", "name": "Video" },
               { "id": "Document", "name": "Document" }
-            ]
-          },
-          {
-            "id": "jcr:content/metadata/dc:publisher",
-            "name": "Brand",
-            "type": "select",
-            "expanded": true,
-            "value": null,
-            "values": [
-              { "id": "Corporate", "name": "Corporate" },
-              { "id": "Aurora", "name": "Aurora" }
             ]
           },
           {

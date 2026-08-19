@@ -373,10 +373,28 @@ export const Filters: FC<FiltersProps> = ({
      Handlers
      ============================================================ */
 
-  /** Stage a value locally — does NOT propagate to parent. */
-  const handleStageChange = useCallback((id: string, value: StagedValue) => {
-    setStaged((prev) => ({ ...prev, [id]: value }));
-  }, []);
+  /** Stage a value locally — does NOT propagate to parent. Changing a parent clears descendants. */
+  const handleStageChange = useCallback(
+    (id: string, value: StagedValue) => {
+      setStaged((prev) => {
+        const next: StagedMap = { ...prev, [id]: value };
+        const queue = [id];
+        const visited = new Set<string>();
+        while (queue.length > 0) {
+          const current = queue.shift() as string;
+          if (visited.has(current)) continue;
+          visited.add(current);
+          filters.forEach((child) => {
+            if (child.dependsOn !== current) return;
+            next[child.id] = isArrayTypeFilter(child) ? [] : null;
+            queue.push(child.id);
+          });
+        }
+        return next;
+      });
+    },
+    [filters],
+  );
 
   /** Apply: commit every staged change in one batch. */
   const handleApply = useCallback(
@@ -445,6 +463,15 @@ export const Filters: FC<FiltersProps> = ({
   const isSearchVisible = showSearch;
   const activeStats: Stats | null = showStats ? searchStats : directoryStats;
 
+  const filtersWithStaged = useMemo(
+    () =>
+      filters.map((filter) => ({
+        ...filter,
+        value: staged[filter.id] ?? ("value" in filter ? filter.value : null),
+      })) as FilterModel[],
+    [filters, staged],
+  );
+
   // Clear should be enabled when there's anything to clear (staged or committed).
   const canClear = hasAnyStaged || hasAnyCommitted;
 
@@ -481,24 +508,15 @@ export const Filters: FC<FiltersProps> = ({
 
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
           <div className={styles.filters}>
-            {filters.map((filter) => {
-              /* Pass staged value into each Filter via cloned model so the
-                 child UI reflects unapplied selections. */
-              const stagedVal = staged[filter.id] ?? null;
-              const filterWithStaged = {
-                ...filter,
-                value: stagedVal,
-              } as FilterModel;
-
-              return (
-                <Filter
-                  filter={filterWithStaged}
-                  key={filter.id}
-                  toggleFilter={toggleFilter}
-                  onChange={(value) => handleStageChange(filter.id, value)}
-                />
-              );
-            })}
+            {filtersWithStaged.map((filter) => (
+              <Filter
+                filter={filter}
+                filters={filtersWithStaged}
+                key={filter.id}
+                toggleFilter={toggleFilter}
+                onChange={(value) => handleStageChange(filter.id, value)}
+              />
+            ))}
           </div>
         </form>
       </div>

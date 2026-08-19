@@ -23,7 +23,7 @@ Before structural edits, query that graph, then read [architecture.md](architect
    - Target: `window.opener` or `parent`. Field names on each asset are frozen (`toPickerAsset` / `postMessageBridge`).
 2. **OOTB URL params** stay compatible: `mode`, `root`, `mimetype`, `assettype`, `viewmode`, `solution`, `requiredproperty`, `targetorigin`. Extensions: `theme`, `semantic`, `fuzzy`, `filter.<prop>`, `range.<prop>`.
 3. **APIs are GET-only** under `/bin/asset-picker` (no CSRF). Every path is allowlisted via `PickerSettings` and must stay under `/content/dam`.
-4. **Filter tab is CA-driven**, not a component dialog. Empty options → list-type filters are **dropped** (blank sidebar).
+4. **Filter tab is CA-driven**, not a component dialog. List-type filters with neither flat options nor `categoryValues` are **dropped**. Cascade is CA-only (`dependsOn` + `cascadeValues`); do not read metadata schemas.
 5. **URL `root` / `theme` / `mode` win** over authored `data-config`, but `root` must sit inside configured roots.
 
 ## Architecture in one pass
@@ -74,7 +74,8 @@ Root has `sling:configRef` + `cq:conf` = `/conf/asset-picker`.
 - New servlet: extend `AbstractPickerServlet`, path `/bin/asset-picker/<name>`, GET + `json`, validate with `PickerRequestParams.from(request, settings)`.
 - CA types are `@Configuration` interfaces in `core/.../caconfig/`. Changing properties requires a new collection item in `/conf/asset-picker/sling:configs/<fqcn>/` **and** matching Java + DTO + SPA model.
 - Sample filters use `adobexp:*` metadata. Repoinit must register that namespace.
-- List-type filter options: Generic List (`valuesListPath`) → inline `values` → `tagsRoot`. Missing lists = silent skip.
+- List-type filter options: Generic List (`valuesListPath`) → inline `values` → `tagsRoot`. Missing lists = silent skip unless `cascadeValues` (or a folder / categorized list) supplies `categoryValues`.
+- Cascading children: `dependsOn` = parent `propertyPath`; options from `cascadeValues` (`parentValue=childValue[=Label]`), a folder of Generic Lists named by parent value, or list items with `category` / `parent`. Changing a parent clears descendants. Search still uses `filter.<id>=value`.
 
 ## Configuration (must be present)
 
@@ -99,6 +100,8 @@ Blank Filter tab checklist: `sling:configRef` on `/content/asset-picker` → ena
 
 **Add a sidebar filter** → CA collection item + option source. No React change if `fieldType` is already supported (`text`, `dropdown`/`select`/`multiselect`, `checkbox`, `radio`, `daterange`). New widget → `models/filter.ts` + `Filter.tsx` + `MetadataFilterServiceImpl.mapFieldType` + search predicates.
 
+**Add a cascading filter chain** → parent CA item with options; each child with `dependsOn` + `cascadeValues` (preferred) or a folder / categorized Generic List. Keep `id` === property path. Do not encode cascade in a metadata schema. Tenant-specific property names stay in that tenant's `/conf/...` CA, not in this repo.
+
 **Add a Quick View row** → CA collection item only (`propertyPath` built-in or metadata).
 
 **Change host payload** → almost never. If you must, update `PickerAsset`, `toPickerAsset`, and document the break. Prefer adding unused optional fields over renaming.
@@ -117,6 +120,7 @@ Blank Filter tab checklist: `sling:configRef` on `/content/asset-picker` → ena
 - Assume `filters.json?path=/content/dam` returns CA filters (DAM usually has no `sling:configRef`).
 - Deploy via a fat `all` package on local AEM unless the user asks (prefer `ui.config` → `ui.apps` → `ui.content`).
 - Point `valuesListPath` at a missing Generic List and expect the filter to show.
+- Encode cascade in a DAM metadata schema, or put customer / tenant / company names in variables, node names, comments, or markdown in this repo.
 
 ## Verify
 

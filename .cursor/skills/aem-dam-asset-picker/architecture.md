@@ -78,7 +78,20 @@ Clientlib: build writes `asset-picker.spa`; `clientlib-selector` (`categories=as
 
 Daterange value encoding: `from..to` (either side optional) on `range.<property>`.
 
-List-type items with zero resolved options are omitted. Resolution: Generic List (`<path>/jcr:content/list/*` with `value` + `jcr:title`) → inline `value` or `value=Label` → child tags of `tagsRoot`.
+List-type items with neither flat options nor `categoryValues` are omitted. Resolution: Generic List (`<path>/jcr:content/list/*` with `value` + `jcr:title`) → inline `value` or `value=Label` → child tags of `tagsRoot`.
+
+### Cascading filters
+
+Authored on Metadata Filter CA only (no metadata schema):
+
+| Child CA property | Role |
+| --- | --- |
+| `dependsOn` | Parent `propertyPath` (leading `./` stripped) |
+| `cascadeValues` | Preferred. `parentValue=childValue` or `parentValue=childValue=Label` |
+| `valuesListPath` folder | Each child Generic List, keyed by node name, `jcr:title`, and `value` |
+| Generic List item `category` / `parent` | Groups options when `valuesListPath` is one list |
+
+`MetadataFilterServiceImpl` emits `categoryValues: { parentValue: [{ id, name }] }` on `FilterDto`. The SPA reads the **staged** parent value so child options update before Apply. Changing a parent clears descendant staged values. Apply still posts `filter.<childProperty>=selectedValue`.
 
 ## Adding a Metadata Filter (no new widget)
 
@@ -86,8 +99,8 @@ List-type items with zero resolved options are omitted. Resolution: Generic List
 2. Add a child under  
    `/conf/asset-picker/sling:configs/com.adobexp.assetpicker.caconfig.AssetPickerMetadataFilterConfig/<id>`  
    with `label`, `propertyPath`, `fieldType`, `orderIndex`, `enabled`.
-3. Provide options: existing Generic List, new list under `/etc/acs-commons/lists/...`, inline `values`, or `tagsRoot`.
-4. Reload selector `?wcmmode=disabled`. Confirm `data-config` JSON includes `filters`.
+3. Provide options: existing Generic List, new list under `/etc/acs-commons/lists/...`, inline `values`, `tagsRoot`, or — for a child filter — `cascadeValues` / a folder of lists / categorized list items.
+4. Reload selector `?wcmmode=disabled`. Confirm `data-config` JSON includes `filters` (and `categoryValues` on cascading children).
 
 Do **not** add dialog fields on `asset-picker/components/selector` for this.
 

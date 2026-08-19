@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="nt:unstructured"
+    label="Client Name"
+    propertyPath="./jcr:content/metadata/adobexp:client-name"
+    fieldType="dropdown"
+    dependsOn="./jcr:content/metadata/adobexp:studio-agency"
+    cascadeValues="[agency-a=client-x=Client X,agency-a=client-y=Client Y,agency-b=client-z=Client Z]"
+    multiSelectAllowed="{Boolean}false"
+    expanded="{Boolean}true"
+    searchable="{Boolean}true"
+    orderIndex="{Long}2"
+    enabled="{Boolean}true"/>

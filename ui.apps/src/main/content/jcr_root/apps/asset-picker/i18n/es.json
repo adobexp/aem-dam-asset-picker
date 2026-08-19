@@ -35,6 +35,7 @@
   "directoryExplorer.searchOptions": "Opciones de búsqueda",
   "directoryExplorer.searchPlaceholder": "Buscar asset",
   "directoryExplorer.searchingFor": "Buscando",
+  "directoryExplorer.selectParentFilter": "Seleccione primero un filtro principal",
   "directoryExplorer.semanticSearch": "Búsqueda semántica",
   "directoryExplorer.semanticSearchDesc": "Encontrar resultados por significado y contexto",
   "directoryExplorer.sortBy": "Ordenar por...",

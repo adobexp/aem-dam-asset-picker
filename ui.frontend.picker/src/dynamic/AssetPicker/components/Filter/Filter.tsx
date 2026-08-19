@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 
-import { useFilters } from "../../hooks/useFilters";
+import { useTranslation } from "../../contexts/I18n.context";
 import { Filter as FilterModel, FilterValue } from "../../models/filter";
 import { CheckboxGroup } from "../CheckboxGroup";
 import { Collapsible } from "../Collapsible";
@@ -13,6 +13,8 @@ import styles from "./Filter.module.scss";
 
 type FilterProps = {
   filter: FilterModel;
+  /** Staged filter models so cascade options follow the unapplied parent value. */
+  filters: FilterModel[];
   toggleFilter: (id: string, collapsed: boolean) => void;
   onChange: (value: null | string | string[]) => void;
 };
@@ -25,8 +27,8 @@ const getSelectedCount = (filter: FilterModel): number => {
   return 1;
 };
 
-export const Filter: FC<FilterProps> = ({ filter, onChange, toggleFilter }) => {
-  const { filters } = useFilters();
+export const Filter: FC<FilterProps> = ({ filter, filters, onChange, toggleFilter }) => {
+  const { __ } = useTranslation();
   const { id, name, type, expanded, dependsOn, categoryValues } = filter;
 
   const handleFilterChange = (value: null | string | string[]): void => {
@@ -35,24 +37,34 @@ export const Filter: FC<FilterProps> = ({ filter, onChange, toggleFilter }) => {
 
   const cascadeValues = useMemo(() => {
     if (!dependsOn) return [];
-    const dependentFilter = filters.find((f: FilterModel) => f.id === dependsOn);
-    if (!dependentFilter || !("value" in dependentFilter)) return [];
+    const parentFilter = filters.find((f: FilterModel) => f.id === dependsOn);
+    if (!parentFilter || !("value" in parentFilter)) return [];
 
-    const filterValues = Array.isArray(dependentFilter.value)
-      ? dependentFilter.value
-      : dependentFilter.value
-        ? [dependentFilter.value]
+    const parentKeys = Array.isArray(parentFilter.value)
+      ? parentFilter.value
+      : parentFilter.value
+        ? [parentFilter.value]
         : [];
 
-    return filterValues.flatMap((key) => {
-      return (categoryValues as Record<string, FilterValue[]>)[key] || [];
+    const seen = new Set<string>();
+    const next: FilterValue[] = [];
+    parentKeys.forEach((key) => {
+      const group = categoryValues?.[key] || [];
+      group.forEach((option) => {
+        if (!option?.id || seen.has(option.id)) return;
+        seen.add(option.id);
+        next.push(option);
+      });
     });
+    return next;
   }, [dependsOn, filters, categoryValues]);
 
   const selectedCount = getSelectedCount(filter);
   const optionValues = dependsOn ? cascadeValues : "values" in filter ? filter.values : [];
   const searchable = filter.searchable !== false;
   const multiSelect = filter.multiSelect !== false;
+  const waitingOnParent =
+    Boolean(dependsOn) && optionValues.length === 0 && type !== "text" && type !== "daterange";
 
   return (
     <div className={styles.filter}>
@@ -64,6 +76,11 @@ export const Filter: FC<FilterProps> = ({ filter, onChange, toggleFilter }) => {
         badge={selectedCount > 0 ? `(${selectedCount} selected)` : undefined}
       >
         <div className={styles.content}>
+          {waitingOnParent && (
+            <p className={styles.cascadeHint}>
+              {__("directoryExplorer.selectParentFilter") || "Select a parent filter first"}
+            </p>
+          )}
           {type === "text" && (
             <TextInput
               id={id}
@@ -73,7 +90,7 @@ export const Filter: FC<FilterProps> = ({ filter, onChange, toggleFilter }) => {
               placeholder={filter.placeholder}
             />
           )}
-          {type === "checkbox" && (
+          {!waitingOnParent && type === "checkbox" && (
             <CheckboxGroup
               id={id}
               values={optionValues}
@@ -83,13 +100,13 @@ export const Filter: FC<FilterProps> = ({ filter, onChange, toggleFilter }) => {
               multiSelect={multiSelect}
             />
           )}
-          {type === "radio" && (
+          {!waitingOnParent && type === "radio" && (
             <RadioGroup id={id} values={optionValues} value={filter.value} onChange={handleFilterChange} />
           )}
-          {type === "select" && (
+          {!waitingOnParent && type === "select" && (
             <Select value={filter.value} onChange={handleFilterChange} values={optionValues} />
           )}
-          {type === "multiselect" && (
+          {!waitingOnParent && type === "multiselect" && (
             <MultiSelect value={filter.value} onChange={handleFilterChange} values={optionValues} />
           )}
           {type === "daterange" && (

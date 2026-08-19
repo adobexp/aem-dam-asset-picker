@@ -35,6 +35,7 @@
   "directoryExplorer.searchOptions": "Opțiuni de căutare",
   "directoryExplorer.searchPlaceholder": "Caută asset",
   "directoryExplorer.searchingFor": "Se caută",
+  "directoryExplorer.selectParentFilter": "Selectați mai întâi un filtru părinte",
   "directoryExplorer.semanticSearch": "Căutare semantică",
   "directoryExplorer.semanticSearchDesc": "Găsește rezultate după sens și context",
   "directoryExplorer.sortBy": "Sortează după...",

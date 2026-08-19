@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="nt:unstructured"
+    label="Studio/Agency"
+    propertyPath="./jcr:content/metadata/adobexp:studio-agency"
+    fieldType="dropdown"
+    values="[agency-a=Agency A,agency-b=Agency B]"
+    multiSelectAllowed="{Boolean}false"
+    expanded="{Boolean}true"
+    searchable="{Boolean}true"
+    orderIndex="{Long}1"
+    enabled="{Boolean}true"/>

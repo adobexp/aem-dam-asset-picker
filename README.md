@@ -216,29 +216,56 @@ Author **one collection item per sidebar field**. The selector Sling model embed
 | `label` | Yes | Section title in the Filter panel, e.g. `Year` |
 | `propertyPath` | Yes | Metadata path, e.g. `./jcr:content/metadata/adobexp:year`. A leading `./` is stripped before Query Builder use. |
 | `fieldType` | No | `text`, `dropdown`, `checkbox` (default), `radio`, `daterange` |
-| `valuesListPath` | For list types | ACS Commons Generic List page that supplies options, e.g. `/etc/acs-commons/lists/adobexp/metadata/year` |
+| `valuesListPath` | For list types | ACS Commons Generic List page that supplies options, e.g. `/etc/acs-commons/lists/adobexp/metadata/year`. For a cascading child, this may be a folder of Generic Lists (each child is looked up by node name, `jcr:title`, or `value`), or a single list whose items have a `category` / `parent` property. |
 | `values` | Alternative | Inline options when no Generic List is set. Each entry is `value` or `value=Label` |
 | `tagsRoot` | Alternative | `cq:tags` root whose child tags become options (used when the two sources above are blank) |
 | `multiSelectAllowed` | No | For `checkbox` / `dropdown`. Default `true`. `dropdown` + `false` becomes a single-select. |
 | `expanded` | No | Open this section when the panel first loads |
 | `searchable` | No | Search box above checkbox options. Default `true` |
 | `placeholder` | No | Placeholder for `text` |
-| `dependsOn` | No | Parent filter `propertyPath` for cascading options |
+| `dependsOn` | No | Parent filter `propertyPath` (same form as that item's Metadata Key). Child options then come from `cascadeValues` (or a folder / categorized list). |
+| `cascadeValues` | For cascading children | Parent-to-child options: `parentValue=childValue` or `parentValue=childValue=Child Label`. Authored on the CA item; independent of DAM metadata schemas. |
 | `orderIndex` | No | Sort order (lower first). Default `0` |
 | `enabled` | No | `false` hides the filter without deleting the item. Default `true` |
 
 **Option resolution order:** Generic List → inline `values` → tags.  
-`text` and `daterange` do not need options. For `checkbox`, `dropdown` and `radio`, **if no options resolve the filter is skipped** and will not appear in the Filter tab.
+`text` and `daterange` do not need options. For `checkbox`, `dropdown` and `radio`, the filter is skipped only when **neither** flat options **nor** `categoryValues` resolve.
+
+### Cascading filters (Context-Aware Configuration)
+
+Cascade is authored entirely on Metadata Filter CA items. It does **not** read metadata schemas or project-specific dropdown components.
+
+1. Add the parent filter with its own `propertyPath` and options (`values`, Generic List, or tags).
+2. Add each child with `dependsOn` set to the parent's `propertyPath`.
+3. Author the child's options as `cascadeValues` (preferred):
+
+```text
+agency-a=client-x=Client X
+agency-a=client-y=Client Y
+agency-b=client-z=Client Z
+```
+
+Changing a parent selection clears descendant selections. Apply still sends each selected value as `filter.<propertyPath>=…`, so cascaded fields participate in search the same way as any other filter.
+
+Optional instead of `cascadeValues`:
+
+- Point `valuesListPath` at a **folder** of Generic Lists. Each child list is matched to a parent selection by its node name, page `jcr:title`, or `value` (so a slug folder can still match a differently capitalised stored value).
+- Or point it at one Generic List whose items set `category` (or `parent`) to the parent value.
+
+`dependsOn` must match the parent item's Metadata Key after a leading `./` is stripped.
 
 Shipped sample items (Global tenant):
 
-| Item | Label | Property | List |
+| Item | Label | Property | Options |
 | --- | --- | --- | --- |
+| `studio-agency` | Studio/Agency | `./jcr:content/metadata/adobexp:studio-agency` | Inline `values` |
+| `client-name` | Client Name | `./jcr:content/metadata/adobexp:client-name` | `dependsOn` studio-agency + `cascadeValues` |
+| `brand` | Brand | `./jcr:content/metadata/adobexp:brand` | `dependsOn` client-name + `cascadeValues` |
 | `year` | Year | `./jcr:content/metadata/adobexp:year` | `/etc/acs-commons/lists/adobexp/metadata/year` |
 | `asset-type` | Asset Type | `./jcr:content/metadata/adobexp:asset-type` | `/etc/acs-commons/lists/adobexp/metadata/asset-type` |
 | `status` | Status | `./jcr:content/metadata/adobexp:status` | `/etc/acs-commons/lists/adobexp/metadata/status` |
 
-Those Generic Lists are packaged with `ui.content` at `/etc/acs-commons/lists/adobexp/metadata`. They must exist in the repository (and be readable by the request user). If the CA items are present but the lists are missing, the Filter tab stays empty.
+The Year / Asset Type / Status Generic Lists are packaged with `ui.content` at `/etc/acs-commons/lists/adobexp/metadata`. They must exist in the repository (and be readable by the request user). If those CA items are present but the lists are missing, those filters are skipped. The Studio/Agency → Client Name → Brand samples use inline `values` and `cascadeValues`, so they do not need Generic Lists.
 
 You can avoid ACS Commons lists by setting **Inline Values** instead, for example:
 
@@ -274,7 +301,7 @@ Optional look-and-feel. Blank values fall through to `theme-light.scss` / `theme
 ### How the Filter tab is populated
 
 1. The selector Sling model (`asset-picker/components/selector`) adapts the page resource to Sling CA Config and asks `MetadataFilterService` for the collection.
-2. Enabled items with a `propertyPath` are mapped to SPA filter DTOs; list-type items without options are dropped.
+2. Enabled items with a `propertyPath` are mapped to SPA filter DTOs; list-type items with neither flat options nor `categoryValues` are dropped.
 3. The list is serialised into the component’s `data-config.filters`.
 4. The React Filter panel renders that array. If it is empty, the SPA may call `/bin/asset-picker/filters.json?path=<current DAM folder>` as a fallback — that only helps when the DAM folder (or an ancestor) also has a `sling:configRef` that resolves the same collection.
 

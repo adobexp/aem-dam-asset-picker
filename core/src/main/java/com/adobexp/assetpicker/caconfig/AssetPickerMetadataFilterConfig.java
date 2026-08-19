@@ -32,7 +32,10 @@ public @interface AssetPickerMetadataFilterConfig {
 
     @Property(label = "Metadata Field Values Location",
             description = "ACS Commons Generic List page that supplies the selectable options, "
-                    + "e.g. /etc/acs-commons/lists/adobexp/metadata/year. Ignored for text and daterange.")
+                    + "e.g. /etc/acs-commons/lists/adobexp/metadata/year. For a cascading filter, "
+                    + "this may instead be a folder of Generic Lists named by parent value, or a "
+                    + "single list whose items carry a category (or parent) property. "
+                    + "Ignored for text and daterange.")
     String valuesListPath() default "";
 
     @Property(label = "Inline Values",
@@ -63,9 +66,16 @@ public @interface AssetPickerMetadataFilterConfig {
     String placeholder() default "";
 
     @Property(label = "Depends On",
-            description = "Property path of a parent filter; when set, options cascade from the "
-                    + "parent's selected values via categoryValues.")
+            description = "Property path of the parent filter (same form as that item's Metadata Key). "
+                    + "When set, this filter's options come from Cascade Values (or a folder of lists) "
+                    + "keyed by the parent selection. Independent of DAM metadata schemas.")
     String dependsOn() default "";
+
+    @Property(label = "Cascade Values",
+            description = "Parent-to-child options for a cascading filter. Each entry is "
+                    + "parentValue=childValue or parentValue=childValue=Child Label. "
+                    + "Used when Depends On is set. Preferred over metadata-schema cascade.")
+    String[] cascadeValues() default {};
 
     @Property(label = "Order Index",
             description = "Sort order among filter items (lower first). Defaults to 0.")

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="nt:unstructured"
+    label="Brand"
+    propertyPath="./jcr:content/metadata/adobexp:brand"
+    fieldType="dropdown"
+    dependsOn="./jcr:content/metadata/adobexp:client-name"
+    cascadeValues="[client-x=brand-one=Brand One,client-y=brand-two=Brand Two,client-z=brand-three=Brand Three]"
+    multiSelectAllowed="{Boolean}false"
+    expanded="{Boolean}true"
+    searchable="{Boolean}true"
+    orderIndex="{Long}3"
+    enabled="{Boolean}true"/>

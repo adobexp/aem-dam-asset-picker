@@ -1,6 +1,7 @@
 package com.adobexp.assetpicker.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -24,13 +25,20 @@ public class FilterDto {
     private final Boolean searchable;
     private final String placeholder;
     private final String dependsOn;
+    private final Map<String, List<ValueDto>> categoryValues;
 
     public FilterDto(String id, String name, String type, boolean expanded, Object value, List<ValueDto> values) {
-        this(id, name, type, expanded, value, values, null, null, null, null);
+        this(id, name, type, expanded, value, values, null, null, null, null, null);
     }
 
     public FilterDto(String id, String name, String type, boolean expanded, Object value, List<ValueDto> values,
                      Boolean multiSelect, Boolean searchable, String placeholder, String dependsOn) {
+        this(id, name, type, expanded, value, values, multiSelect, searchable, placeholder, dependsOn, null);
+    }
+
+    public FilterDto(String id, String name, String type, boolean expanded, Object value, List<ValueDto> values,
+                     Boolean multiSelect, Boolean searchable, String placeholder, String dependsOn,
+                     Map<String, List<ValueDto>> categoryValues) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -41,6 +49,7 @@ public class FilterDto {
         this.searchable = searchable;
         this.placeholder = placeholder;
         this.dependsOn = dependsOn;
+        this.categoryValues = (categoryValues == null || categoryValues.isEmpty()) ? null : categoryValues;
     }
 
     public String getId() {
@@ -82,6 +91,14 @@ public class FilterDto {
 
     public String getDependsOn() {
         return dependsOn;
+    }
+
+    /**
+     * Child options keyed by the parent filter's stored value. Present when this filter
+     * {@link #getDependsOn() depends on} another filter.
+     */
+    public Map<String, List<ValueDto>> getCategoryValues() {
+        return categoryValues;
     }
 
     /** A selectable option. {@code id} is the stored value, {@code name} the label. */
