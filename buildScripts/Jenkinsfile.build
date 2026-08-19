@@ -69,8 +69,8 @@ pipeline {
         )
         string(
             name: 'NEXT_DEV_VERSION',
-            defaultValue: '1.0.2-SNAPSHOT',
-            description: 'Next development version written to all POM files AFTER the release. Must end with "-SNAPSHOT". Required when RELEASE_BUILD=true.'
+            defaultValue: '2.1.1-SNAPSHOT',
+            description: 'Next development version written to all POM files AFTER the release. Must end with "-SNAPSHOT". Required when RELEASE_BUILD=true. After exported OSGi API changes, RELEASE_VERSION must be at least a minor bump (e.g. 2.1.0, not 2.0.1) so bnd-baseline can pass.'
         )
     }
 
