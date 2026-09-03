@@ -369,7 +369,7 @@ npm run start:local
 
 **Prerequisites**
 
-1. **ACS Commons Generic Lists** must already be installed. `ui.content` and `all` declare a PackMgr dependency on `adobe/consulting:acs-aem-commons-ui.apps` **without a version**, so any installed ACS Commons that ships Generic Lists is accepted. `${acs.commons.version}` (currently 6.16.0) is a suggested version when none is already present, not a pin. If the dependency is missing, Package Manager refuses the install.
+1. **ACS Commons Generic Lists** must already be installed. `ui.content` declares a PackMgr dependency on `adobe/consulting:acs-aem-commons-ui.apps` with version range `[6.0.0,)`, so any installed ACS Commons 6.x that ships Generic Lists is accepted. `${acs.commons.version}` (currently 6.16.0) is a suggested version when none is already present. If the dependency is missing, Package Manager refuses the install. The `all` container cannot declare this (FileVault forbids dependencies on container packages); the gate is on the embedded `ui.content` package.
 2. **WCM.io CA Config editor** is embedded by this project (and by `adobexp`) at `/apps/wcm-io-packages/application/install`. Install order with `adobexp` does not matter: both write the same artifacts (`io.wcm.caconfig.editor` 1.16.6 and `io.wcm.caconfig.extensions` 1.9.6) and use an all-versions filter so leftover JARs are replaced, not duplicated.
 
 Build everything and install the single package on local author:

@@ -66,8 +66,7 @@
 
         <!--
             Suggested ACS Commons version when none is already installed.
-            PackMgr still accepts any installed ACS Commons: the vault package dependency
-            omits a version so Generic Lists from any ACS Commons satisfy the install check.
+            PackMgr accepts ACS Commons 6.x via FileVault range [6.0.0,) on ui.content.
         -->
         <acs.commons.version>6.16.0</acs.commons.version>
         <!-- Must stay in lock-step with adobexp (same JCR install path + same versions). -->

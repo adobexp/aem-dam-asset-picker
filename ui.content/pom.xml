@@ -29,13 +29,15 @@
                     <accessControlHandling>ignore</accessControlHandling>
                     <!--
                         PackMgr refuses to install this package until ACS Commons Generic Lists
-                        (ui.apps) is present. Version is omitted so any installed ACS Commons
-                        satisfies the check.
+                        (ui.apps) is present. FileVault 1.3.2 NPEs if the version is omitted
+                        (VersionRange.getLow() is null), so use an open 6.x range: any installed
+                        ACS Commons 6 satisfies the check.
                     -->
                     <dependencies>
                         <dependency>
                             <group>adobe/consulting</group>
                             <name>acs-aem-commons-ui.apps</name>
+                            <version>[6.0.0,)</version>
                         </dependency>
                     </dependencies>
                     <repositoryStructurePackages>

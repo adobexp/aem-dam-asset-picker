@@ -133,4 +133,4 @@ Use `?wcmmode=disabled` on author. Hash `#/content/dam/...` is the current folde
 
 ## Deploy
 
-Install `ui.config` → `ui.apps` → `ui.content` unless the user explicitly wants the `all` package. ACS Commons Generic Lists (`acs-aem-commons-ui.apps`, any version) must be installed before `ui.content`. SPA-only iteration: `ui.frontend.picker` `npm run build` then reinstall `ui.apps`. Java-only: `mvn clean install -PautoInstallBundle -pl core`.
+Install `ui.config` → `ui.apps` → `ui.content` unless the user explicitly wants the `all` package. ACS Commons Generic Lists (`acs-aem-commons-ui.apps` 6.x) must be installed before `ui.content`. SPA-only iteration: `ui.frontend.picker` `npm run build` then reinstall `ui.apps`. Java-only: `mvn clean install -PautoInstallBundle -pl core`.

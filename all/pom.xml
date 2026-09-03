@@ -23,13 +23,6 @@
                     <group>com.adobexp</group>
                     <packageType>container</packageType>
                     <skipSubPackageValidation>true</skipSubPackageValidation>
-                    <!-- Same ACS Commons gate as ui.content: any installed version is enough. -->
-                    <dependencies>
-                        <dependency>
-                            <group>adobe/consulting</group>
-                            <name>acs-aem-commons-ui.apps</name>
-                        </dependency>
-                    </dependencies>
                     <embeddeds>
                         <embedded>
                             <groupId>com.adobexp</groupId>

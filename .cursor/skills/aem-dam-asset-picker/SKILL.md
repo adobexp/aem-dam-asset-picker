@@ -52,7 +52,7 @@ Host page  →  selector.html (HTL + data-config + data-translations)
 | `core` | Servlets, DTOs, search, CA interfaces, Sling model. |
 | `ui.apps` | Components, templates, i18n JSON, clientlibs. |
 | `ui.config` | OSGi: `PickerSettingsImpl`, repoinit `adobexp` namespace; embeds WCM.io at `/apps/wcm-io-packages/application/install`. |
-| `ui.content` | `/content/asset-picker`, `/conf/asset-picker` CA samples, ACS Generic Lists, sample DAM at `/content/dam/asset-picker`. PackMgr requires `acs-aem-commons-ui.apps` (any version). |
+| `ui.content` | `/content/asset-picker`, `/conf/asset-picker` CA samples, ACS Generic Lists, sample DAM at `/content/dam/asset-picker`. PackMgr requires `acs-aem-commons-ui.apps` 6.x. |
 
 Content tree: `/content/asset-picker/<tenant>/<country>/<lang>/{picker,selector}`.  
 Root has `sling:configRef` + `cq:conf` = `/conf/asset-picker`.
