@@ -27,6 +27,17 @@
                     <name>aem-dam-asset-picker.ui.content</name>
                     <packageType>content</packageType>
                     <accessControlHandling>ignore</accessControlHandling>
+                    <!--
+                        PackMgr refuses to install this package until ACS Commons Generic Lists
+                        (ui.apps) is present. Version is omitted so any installed ACS Commons
+                        satisfies the check.
+                    -->
+                    <dependencies>
+                        <dependency>
+                            <group>adobe/consulting</group>
+                            <name>acs-aem-commons-ui.apps</name>
+                        </dependency>
+                    </dependencies>
                     <repositoryStructurePackages>
                         <repositoryStructurePackage>
                             <groupId>com.adobexp</groupId>

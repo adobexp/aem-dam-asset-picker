@@ -16,6 +16,6 @@
             intro="Configure the launch options, open the picker in an iframe, choose assets and confirm the postMessage payload matches the OOTB AEM Asset Picker contract."
             selectorPath="/content/asset-picker/global/us/pl/selector"
             defaultRoot="/content/dam"
-            rootSuggestions="[/content/dam,/content/dam/we-retail,/content/dam/wknd]"/>
+            rootSuggestions="[/content/dam,/content/dam/asset-picker,/content/dam/we-retail,/content/dam/wknd]"/>
     </jcr:content>
 </jcr:root>

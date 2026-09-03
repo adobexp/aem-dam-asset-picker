@@ -58,8 +58,10 @@ Clientlib: build writes `asset-picker.spa`; `clientlib-selector` (`categories=as
 | `ui.apps/.../i18n/*.json` | Locale dictionaries (en is canonical) |
 | `ui.config/.../PickerSettingsImpl.cfg.json` | Default OSGi |
 | `ui.config/.../RepositoryInitializer~asset-picker.cfg.json` | `adobexp` namespace |
+| `ui.config` / `all` embed | WCM.io editor + extensions at `/apps/wcm-io-packages/application/install` (shared with adobexp) |
 | `ui.content/.../conf/asset-picker/_sling_configs/` | Sample CA |
 | `ui.content/.../etc/acs-commons/lists/adobexp/metadata/` | Sample Generic Lists |
+| `ui.content/.../content/dam/asset-picker/` | Sample DAM assets |
 
 ## CA → SPA field mapping
 
@@ -131,4 +133,4 @@ Use `?wcmmode=disabled` on author. Hash `#/content/dam/...` is the current folde
 
 ## Deploy
 
-Install `ui.config` → `ui.apps` → `ui.content` unless the user explicitly wants the `all` package. SPA-only iteration: `ui.frontend.picker` `npm run build` then reinstall `ui.apps`. Java-only: `mvn clean install -PautoInstallBundle -pl core`.
+Install `ui.config` → `ui.apps` → `ui.content` unless the user explicitly wants the `all` package. ACS Commons Generic Lists (`acs-aem-commons-ui.apps`, any version) must be installed before `ui.content`. SPA-only iteration: `ui.frontend.picker` `npm run build` then reinstall `ui.apps`. Java-only: `mvn clean install -PautoInstallBundle -pl core`.

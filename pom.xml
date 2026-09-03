@@ -64,6 +64,17 @@
 
         <componentGroupName>AEM DAM Asset Picker</componentGroupName>
 
+        <!--
+            Suggested ACS Commons version when none is already installed.
+            PackMgr still accepts any installed ACS Commons: the vault package dependency
+            omits a version so Generic Lists from any ACS Commons satisfy the install check.
+        -->
+        <acs.commons.version>6.16.0</acs.commons.version>
+        <!-- Must stay in lock-step with adobexp (same JCR install path + same versions). -->
+        <io.wcm.caconfig.editor.version>1.16.6</io.wcm.caconfig.editor.version>
+        <io.wcm.caconfig.extensions.version>1.9.6</io.wcm.caconfig.extensions.version>
+        <wcmio.embed.path>/apps/wcm-io-packages/application/install</wcmio.embed.path>
+
         <!-- Maven Central / GPG (same key + server id as other AdobeXP releases) -->
         <keyname>33C0330C91FCC3C1</keyname>
         <server>central</server>
@@ -580,6 +591,16 @@ Bundle-DocURL:
                         <artifactId>org.apache.sling.scripting.api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.wcm</groupId>
+                <artifactId>io.wcm.caconfig.editor</artifactId>
+                <version>${io.wcm.caconfig.editor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.wcm</groupId>
+                <artifactId>io.wcm.caconfig.extensions</artifactId>
+                <version>${io.wcm.caconfig.extensions.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

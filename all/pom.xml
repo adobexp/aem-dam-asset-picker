@@ -23,6 +23,13 @@
                     <group>com.adobexp</group>
                     <packageType>container</packageType>
                     <skipSubPackageValidation>true</skipSubPackageValidation>
+                    <!-- Same ACS Commons gate as ui.content: any installed version is enough. -->
+                    <dependencies>
+                        <dependency>
+                            <group>adobe/consulting</group>
+                            <name>acs-aem-commons-ui.apps</name>
+                        </dependency>
+                    </dependencies>
                     <embeddeds>
                         <embedded>
                             <groupId>com.adobexp</groupId>
@@ -41,6 +48,21 @@
                             <artifactId>aem-dam-asset-picker.ui.content</artifactId>
                             <type>zip</type>
                             <target>/apps/asset-picker-packages/content/install</target>
+                        </embedded>
+                        <!-- Shared with adobexp: same path + version so install order cannot duplicate WCM.io. -->
+                        <embedded>
+                            <groupId>io.wcm</groupId>
+                            <artifactId>io.wcm.caconfig.editor</artifactId>
+                            <target>${wcmio.embed.path}</target>
+                            <filter>true</filter>
+                            <isAllVersionsFilter>true</isAllVersionsFilter>
+                        </embedded>
+                        <embedded>
+                            <groupId>io.wcm</groupId>
+                            <artifactId>io.wcm.caconfig.extensions</artifactId>
+                            <target>${wcmio.embed.path}</target>
+                            <filter>true</filter>
+                            <isAllVersionsFilter>true</isAllVersionsFilter>
                         </embedded>
                     </embeddeds>
                 </configuration>
@@ -87,6 +109,14 @@
             <artifactId>aem-dam-asset-picker.ui.content</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>io.wcm</groupId>
+            <artifactId>io.wcm.caconfig.editor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.wcm</groupId>
+            <artifactId>io.wcm.caconfig.extensions</artifactId>
         </dependency>
     </dependencies>
 

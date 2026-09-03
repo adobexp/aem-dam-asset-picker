@@ -3,5 +3,5 @@
     <filter root="/content/asset-picker"/>
     <filter root="/conf/asset-picker"/>
     <filter root="/etc/acs-commons/lists/adobexp"/>
-    <filter root="/content/dam/adobexp/samples"/>
+    <filter root="/content/dam/asset-picker"/>
 </workspaceFilter>

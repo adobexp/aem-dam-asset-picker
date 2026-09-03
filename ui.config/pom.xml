@@ -26,6 +26,23 @@
                     </properties>
                     <packageType>container</packageType>
                     <showImportPackageReport>false</showImportPackageReport>
+                    <embeddeds>
+                        <!-- Same path as adobexp so ui.config-first deploys cannot leave two WCM.io copies. -->
+                        <embedded>
+                            <groupId>io.wcm</groupId>
+                            <artifactId>io.wcm.caconfig.editor</artifactId>
+                            <target>${wcmio.embed.path}</target>
+                            <filter>true</filter>
+                            <isAllVersionsFilter>true</isAllVersionsFilter>
+                        </embedded>
+                        <embedded>
+                            <groupId>io.wcm</groupId>
+                            <artifactId>io.wcm.caconfig.extensions</artifactId>
+                            <target>${wcmio.embed.path}</target>
+                            <filter>true</filter>
+                            <isAllVersionsFilter>true</isAllVersionsFilter>
+                        </embedded>
+                    </embeddeds>
                     <repositoryStructurePackages>
                         <repositoryStructurePackage>
                             <groupId>com.adobexp</groupId>
@@ -47,6 +64,14 @@
             <artifactId>aem-dam-asset-picker.ui.apps.structure</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>io.wcm</groupId>
+            <artifactId>io.wcm.caconfig.editor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.wcm</groupId>
+            <artifactId>io.wcm.caconfig.extensions</artifactId>
         </dependency>
     </dependencies>
 </project>

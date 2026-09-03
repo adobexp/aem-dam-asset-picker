@@ -323,8 +323,8 @@ Checklist when the Filter tab is blank:
 | `core` | `jar` (OSGi bundle) | Sling servlets, DTOs, search service, Sling models, CA interfaces |
 | `ui.apps` | `content-package` | `/apps/asset-picker` components, templates and clientlibs; embeds the core bundle |
 | `ui.apps.structure` | `content-package` | Repository structure definition |
-| `ui.config` | `content-package` | OSGi configuration (`PickerSettings`, `adobexp` repoinit namespace) |
-| `ui.content` | `content-package` | `/content/asset-picker`, `/conf/asset-picker` CA samples, ACS Generic Lists, sample DAM content |
+| `ui.config` | `content-package` | OSGi configuration (`PickerSettings`, `adobexp` repoinit namespace) and shared WCM.io CA editor |
+| `ui.content` | `content-package` | `/content/asset-picker`, `/conf/asset-picker` CA samples, ACS Generic Lists, sample DAM at `/content/dam/asset-picker` |
 | `all` | `content-package` | Single deployable container package |
 
 ---
@@ -367,6 +367,11 @@ npm run start:local
 
 ## Building and deploying
 
+**Prerequisites**
+
+1. **ACS Commons Generic Lists** must already be installed. `ui.content` and `all` declare a PackMgr dependency on `adobe/consulting:acs-aem-commons-ui.apps` **without a version**, so any installed ACS Commons that ships Generic Lists is accepted. `${acs.commons.version}` (currently 6.16.0) is a suggested version when none is already present, not a pin. If the dependency is missing, Package Manager refuses the install.
+2. **WCM.io CA Config editor** is embedded by this project (and by `adobexp`) at `/apps/wcm-io-packages/application/install`. Install order with `adobexp` does not matter: both write the same artifacts (`io.wcm.caconfig.editor` 1.16.6 and `io.wcm.caconfig.extensions` 1.9.6) and use an all-versions filter so leftover JARs are replaced, not duplicated.
+
 Build everything and install the single package on local author:
 
 ```bash
@@ -391,6 +396,7 @@ After deploy:
 | --- | --- |
 | Demo / integration host | `/content/asset-picker/global/us/en/picker.html` |
 | Asset Selector | `/content/asset-picker/global/us/en/selector.html` |
+| Sample DAM assets | `/content/dam/asset-picker` |
 
 Add `?wcmmode=disabled` on author when you want the published-style experience without the editor chrome.
 

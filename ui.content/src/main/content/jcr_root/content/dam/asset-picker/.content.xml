@@ -3,5 +3,5 @@
     jcr:primaryType="sling:OrderedFolder">
     <jcr:content
         jcr:primaryType="nt:unstructured"
-        jcr:title="Samples"/>
+        jcr:title="Asset Picker Samples"/>
 </jcr:root>
