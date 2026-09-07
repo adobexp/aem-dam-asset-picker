@@ -90,6 +90,13 @@
             <artifactId>aem-dam-asset-picker.ui.apps</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <exclusions>
+                <!-- Intermediate SPA jar is already baked into ui.apps; never published. -->
+                <exclusion>
+                    <groupId>com.adobexp</groupId>
+                    <artifactId>aem-dam-asset-picker.ui.frontend.picker</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.adobexp</groupId>

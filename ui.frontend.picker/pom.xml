@@ -17,6 +17,8 @@
     <!--
         Intermediate build module only — clientlibs are embedded into ui.apps.
         Do not publish this artifact to Maven Central / Nexus.
+        ui.apps must depend on this module with scope=provided (optional) so
+        consumers of aem-dam-asset-picker.all never try to resolve this jar.
 
         Note: central-publishing-maven-plugin 0.8.0 still STAGES artifacts into the
         shared central-staging bundle when skipPublishing=true (it only skips the

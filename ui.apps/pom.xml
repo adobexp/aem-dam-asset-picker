@@ -191,10 +191,17 @@
             <artifactId>aem-dam-asset-picker.core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!--
+            Reactor-only: unpacks the SPA into this package's clientlib.
+            Must stay provided (and optional) so consumers of ui.apps / .all do not
+            resolve this jar — it is never published to Maven Central.
+        -->
         <dependency>
             <groupId>com.adobexp</groupId>
             <artifactId>aem-dam-asset-picker.ui.frontend.picker</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.adobexp</groupId>
