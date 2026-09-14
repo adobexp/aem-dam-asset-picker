@@ -150,10 +150,12 @@
                 <configuration>
                     <group>com.adobexp</group>
                     <name>aem-dam-asset-picker.ui.apps</name>
-                    <!-- application: /apps only, including the embedded core bundle.
-                         mixed is legacy and is rejected when this zip is nested inside
-                         the CONTAINER package aem-dam-asset-picker.all. -->
-                    <packageType>application</packageType>
+                    <!-- mixed: this package ships /apps code and the OSGi bundle at
+                         /apps/asset-picker/install. FileVault 1.3.2 treats OSGi jars in
+                         application packages as an error (jackrabbit-packagetype).
+                         aem-dam-asset-picker.all skips subpackage validation, so mixed is
+                         allowed inside that container. -->
+                    <packageType>mixed</packageType>
                     <accessControlHandling>ignore</accessControlHandling>
                     <failOnUncoveredSourceFiles>false</failOnUncoveredSourceFiles>
                     <properties>
