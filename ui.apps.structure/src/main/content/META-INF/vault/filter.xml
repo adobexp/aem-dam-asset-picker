@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
+    <!-- /apps is the ancestor FileVault requires for application packages that
+         filter /apps/asset-picker (and the nested install roots below). -->
+    <filter root="/apps"/>
     <filter root="/apps/asset-picker"/>
     <filter root="/apps/asset-picker-packages"/>
     <filter root="/apps/wcm-io-packages"/>
