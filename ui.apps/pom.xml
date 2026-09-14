@@ -150,8 +150,10 @@
                 <configuration>
                     <group>com.adobexp</group>
                     <name>aem-dam-asset-picker.ui.apps</name>
-                    <!-- mixed: ships components and the OSGi bundle that backs them -->
-                    <packageType>mixed</packageType>
+                    <!-- application: /apps only, including the embedded core bundle.
+                         mixed is legacy and is rejected when this zip is nested inside
+                         the CONTAINER package aem-dam-asset-picker.all. -->
+                    <packageType>application</packageType>
                     <accessControlHandling>ignore</accessControlHandling>
                     <failOnUncoveredSourceFiles>false</failOnUncoveredSourceFiles>
                     <properties>

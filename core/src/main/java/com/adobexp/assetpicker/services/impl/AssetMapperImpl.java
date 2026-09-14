@@ -14,7 +14,6 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import com.adobexp.assetpicker.dto.AssetDto;
 import com.adobexp.assetpicker.dto.DirectoryDto;
@@ -23,7 +22,6 @@ import com.adobexp.assetpicker.dto.ResolutionDto;
 import com.adobexp.assetpicker.dto.ThumbnailDto;
 import com.adobexp.assetpicker.services.AssetMapper;
 import com.adobexp.assetpicker.util.DamNodeTypes;
-import com.day.cq.commons.Externalizer;
 import com.day.cq.commons.jcr.JcrConstants;
 import com.day.cq.dam.api.Asset;
 
@@ -51,8 +49,9 @@ public class AssetMapperImpl implements AssetMapper {
         CARD_METADATA.put("dc:description", "Description");
     }
 
-    @Reference
-    private Externalizer externalizer;
+    private static final String HEADER_FORWARDED_PROTO = "X-Forwarded-Proto";
+
+    private static final String HEADER_FORWARDED_HOST = "X-Forwarded-Host";
 
     @Override
     public AssetDto toAsset(Resource resource, SlingHttpServletRequest request) {
@@ -116,17 +115,62 @@ public class AssetMapperImpl implements AssetMapper {
         return path + THUMBNAIL_SELECTOR;
     }
 
-    private String externalUrl(String path, SlingHttpServletRequest request) {
-        if (externalizer == null || request == null) {
+    /**
+     * Absolute URL of the asset on the host that served the picker request. A shared publish
+     * tier fronts many tenant domains, so an instance-wide Externalizer domain is right for at
+     * most one of them; the request's own scheme and host are correct for every vhost.
+     */
+    static String externalUrl(String path, SlingHttpServletRequest request) {
+        if (request == null || StringUtils.isBlank(path)) {
             return path;
         }
-        try {
-            return externalizer.externalLink(request.getResourceResolver(), Externalizer.PUBLISH, path);
-        } catch (IllegalArgumentException error) {
-            // No externalizer mapping in this environment; a repository path still resolves
-            // relative to the host that served the picker.
-            return path;
+        String mapped = path;
+        if (request.getResourceResolver() != null) {
+            String candidate = request.getResourceResolver().map(request, path);
+            if (StringUtils.isNotBlank(candidate)) {
+                mapped = candidate;
+            }
         }
+        if (mapped.startsWith("http://") || mapped.startsWith("https://")) {
+            // Resource mapping already produced an absolute URL; honour it.
+            return mapped;
+        }
+        return requestBaseUrl(request) + mapped;
+    }
+
+    /**
+     * {@code scheme://host[:port]} of the inbound request. Behind the CDN / dispatcher the
+     * container sees plain HTTP on an internal port, so {@code X-Forwarded-Proto} and
+     * {@code X-Forwarded-Host} take precedence when present. Both headers may carry a
+     * comma-separated hop list; the first entry is the client-facing value.
+     */
+    static String requestBaseUrl(SlingHttpServletRequest request) {
+        String scheme = firstHop(request.getHeader(HEADER_FORWARDED_PROTO));
+        if (StringUtils.isBlank(scheme)) {
+            scheme = StringUtils.defaultIfBlank(request.getScheme(), "https");
+        }
+        scheme = scheme.toLowerCase();
+
+        String host = firstHop(request.getHeader(HEADER_FORWARDED_HOST));
+        if (StringUtils.isBlank(host)) {
+            host = request.getServerName();
+            int port = request.getServerPort();
+            if (port > 0 && !isDefaultPort(scheme, port)) {
+                host = host + ":" + port;
+            }
+        }
+        return scheme + "://" + host;
+    }
+
+    private static String firstHop(String headerValue) {
+        if (StringUtils.isBlank(headerValue)) {
+            return null;
+        }
+        return StringUtils.trimToNull(StringUtils.substringBefore(headerValue, ","));
+    }
+
+    private static boolean isDefaultPort(String scheme, int port) {
+        return ("https".equals(scheme) && port == 443) || ("http".equals(scheme) && port == 80);
     }
 
     private static ValueMap metadata(Resource resource) {
